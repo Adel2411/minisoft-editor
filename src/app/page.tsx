@@ -1,39 +1,51 @@
 "use client";
-import { RoundedButton } from "@/components/RoundedButton";
+
+import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { useCallback, useState } from "react";
 
-export default function Home() {
-  const [greeted, setGreeted] = useState<string | null>(null);
-  const greet = useCallback((): void => {
-    invoke<string>("greet")
-      .then((s) => {
-        setGreeted(s);
-      })
-      .catch((err: unknown) => {
-        console.error(err);
-      });
-  }, []);
+export default function Page() {
+  const [code, setCode] = useState<string>(
+    "// Write your MiniSoft code here\n",
+  );
+  const [output, setOutput] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
-  async function compile() {
+  const handleCompile = async () => {
+    setLoading(true);
+    setOutput("");
     try {
-      const result = await invoke("compile_minisoft", {
-        filePath: "./test2.ms",
-        verbose: true,
+      // note: we pass `code` (the textarea content), not a filePath
+      const result = await invoke<string>("compile_minisoft", {
+        code,
+        verbose: false,
       });
-      console.log(result);
-    } catch (err) {
-      console.error("Compilation error:", err);
+      setOutput(result);
+    } catch (err: unknown) {
+      console.error(err);
+      setOutput(`Error: ${String(err)}`);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <RoundedButton onClick={greet} title='Call "greet" from Rust' />
-      <RoundedButton onClick={compile} title="Test the Compiler" />
-      <p className="break-words w-md text-center">
-        {greeted ?? "Click the button to call the Rust function"}
-      </p>
+    <div className="flex flex-col items-center justify-start min-h-screen p-6 space-y-4">
+      <h1 className="text-2xl font-bold">MiniSoft Compiler</h1>
+      <textarea
+        className="w-full max-w-2xl h-64 p-2 border rounded focus:outline-none"
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+      />
+      <button
+        onClick={handleCompile}
+        disabled={loading}
+        className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+      >
+        {loading ? "Compiling..." : "Compile Code"}
+      </button>
+      <pre className="w-full max-w-2xl p-4 bg-gray-100 rounded whitespace-pre-wrap break-words">
+        {output}
+      </pre>
     </div>
   );
 }

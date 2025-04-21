@@ -11,8 +11,8 @@ fn greet() -> String {
 }
 
 #[command]
-fn compile_minisoft(file_path: String, verbose: bool) -> Result<String, String> {
-  run_compiler(&file_path, verbose)
+fn compile_minisoft(code: String, verbose: bool) -> Result<String, String> {
+  run_compiler(code, verbose)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
