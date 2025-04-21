@@ -35,235 +35,108 @@ export default function Editor({
   }>({ line: 1, column: 1 });
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [currentMatchIndex, setCurrentMatchIndex] = useState<number>(0);
+  const [matches, setMatches] = useState<number[]>([]);
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [foldedLines, setFoldedLines] = useState<number[]>([]);
 
   // Update line numbers when code changes
   useEffect(() => {
-    if (textareaRef.current) {
-      const lines = textareaRef.current.value.split("\n").length;
-      setLineCount(lines);
-    }
+    const lines = code.split("\n").length;
+    setLineCount(lines);
   }, [code]);
 
-  // Update cursor position
-  const updateCursorPosition = () => {
-    if (!textareaRef.current) return;
-
-    const cursorPos = textareaRef.current.selectionStart;
-    const textBeforeCursor = code.substring(0, cursorPos);
-    const line = (textBeforeCursor.match(/\n/g) || []).length + 1;
-    const lastNewLine = textBeforeCursor.lastIndexOf("\n");
-    const column = lastNewLine === -1 ? cursorPos + 1 : cursorPos - lastNewLine;
-
-    setCursorPosition({ line, column });
-  };
-
-  // Handle key events
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Tab key
-    if (e.key === "Tab") {
-      e.preventDefault();
-      const start = e.currentTarget.selectionStart;
-      const end = e.currentTarget.selectionEnd;
-
-      // If text is selected, indent multiple lines
-      if (start !== end) {
-        const selectedText = code.substring(start, end);
-        const lines = selectedText.split("\n");
-
-        if (e.shiftKey) {
-          // Unindent
-          const newText = lines
-            .map((line) => (line.startsWith("  ") ? line.substring(2) : line))
-            .join("\n");
-          const newCode =
-            code.substring(0, start) + newText + code.substring(end);
-          setCode(newCode);
-
-          // Adjust selection
-          setTimeout(() => {
-            if (textareaRef.current) {
-              textareaRef.current.selectionStart = start;
-              textareaRef.current.selectionEnd = start + newText.length;
-            }
-          }, 0);
-        } else {
-          // Indent
-          const newText = lines.map((line) => "  " + line).join("\n");
-          const newCode =
-            code.substring(0, start) + newText + code.substring(end);
-          setCode(newCode);
-
-          // Adjust selection
-          setTimeout(() => {
-            if (textareaRef.current) {
-              textareaRef.current.selectionStart = start;
-              textareaRef.current.selectionEnd = start + newText.length;
-            }
-          }, 0);
-        }
-      } else {
-        // No selection, just insert tab at cursor
-        const newText = code.substring(0, start) + "  " + code.substring(end);
-        setCode(newText);
-
-        // Set cursor position after the inserted tab
-        setTimeout(() => {
-          if (textareaRef.current) {
-            textareaRef.current.selectionStart =
-              textareaRef.current.selectionEnd = start + 2;
-          }
-        }, 0);
-      }
-    }
-
-    // Enter key for automatic indentation
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const start = e.currentTarget.selectionStart;
-      const currentLine = code.substring(0, start).split("\n").pop() || "";
-
-      // Calculate the indentation for the new line
-      const indentation = getIndentation(currentLine);
-
-      const newText =
-        code.substring(0, start) + "\n" + indentation + code.substring(start);
-      setCode(newText);
-
-      // Set cursor position after the indentation
-      setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.selectionStart =
-            textareaRef.current.selectionEnd = start + 1 + indentation.length;
-        }
-      }, 0);
-    }
-
-    // Auto-close brackets and quotes
-    if (e.key === "(" || e.key === "[" || e.key === "{" || e.key === '"') {
-      const start = e.currentTarget.selectionStart;
-      const end = e.currentTarget.selectionEnd;
-
-      // If text is selected, wrap it
-      if (start !== end) {
+  // Add keyboard shortcut for search (Ctrl+F)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === "f") {
         e.preventDefault();
-        const selectedText = code.substring(start, end);
-        let closingChar = "";
+        setIsSearchOpen(true);
+      }
+    };
 
-        switch (e.key) {
-          case "(":
-            closingChar = ")";
-            break;
-          case "[":
-            closingChar = "]";
-            break;
-          case "{":
-            closingChar = "}";
-            break;
-          case '"':
-            closingChar = '"';
-            break;
-        }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
-        const newText =
-          code.substring(0, start) +
-          e.key +
-          selectedText +
-          closingChar +
-          code.substring(end);
-        setCode(newText);
+  // Sync scrolling between textarea and line numbers
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    const lineNumbers = lineNumbersRef.current;
 
-        // Keep the selection
-        setTimeout(() => {
-          if (textareaRef.current) {
-            textareaRef.current.selectionStart = start + 1;
-            textareaRef.current.selectionEnd = end + 1;
-          }
-        }, 0);
-      } else {
-        // Auto-close the bracket/quote
-        if (e.key === "(" || e.key === "[" || e.key === "{" || e.key === '"') {
-          e.preventDefault();
-          let closingChar = "";
+    if (!textarea || !lineNumbers) return;
 
-          switch (e.key) {
-            case "(":
-              closingChar = ")";
-              break;
-            case "[":
-              closingChar = "]";
-              break;
-            case "{":
-              closingChar = "}";
-              break;
-            case '"':
-              closingChar = '"';
-              break;
-          }
+    const handleScroll = () => {
+      lineNumbers.scrollTop = textarea.scrollTop;
+    };
 
-          const newText =
-            code.substring(0, start) +
-            e.key +
-            closingChar +
-            code.substring(end);
-          setCode(newText);
+    textarea.addEventListener("scroll", handleScroll);
+    return () => textarea.removeEventListener("scroll", handleScroll);
+  }, []);
 
-          // Place cursor between the brackets/quotes
-          setTimeout(() => {
-            if (textareaRef.current) {
-              textareaRef.current.selectionStart =
-                textareaRef.current.selectionEnd = start + 1;
-            }
-          }, 0);
-        }
+  // Function to generate line numbers considering folded sections
+  const renderLineNumbers = () => {
+    if (!code) return [];
+
+    const codeLines = code.split("\n");
+    const visibleLineNumbers = [];
+
+    for (let i = 0; i < codeLines.length; i++) {
+      const lineNumber = i + 1;
+
+      // Check if this line should be hidden due to folding
+      const shouldHide = foldedLines.some((foldedLine) => {
+        return (
+          foldedLine < lineNumber && isFoldedSection(code, foldedLine - 1, i)
+        );
+      });
+
+      if (!shouldHide) {
+        visibleLineNumbers.push(lineNumber);
       }
     }
 
-    // Search shortcut (Ctrl+F)
-    if (e.key === "f" && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      setIsSearchOpen(true);
-    }
-
-    // Save shortcut (Ctrl+S)
-    if (e.key === "s" && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      // Mock save functionality
-      const blob = new Blob([code], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "minisoft-code.ms";
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    // Run shortcut (Ctrl+Enter)
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      onCompile();
-    }
+    return visibleLineNumbers;
   };
 
-  // Sync scroll between line numbers and textarea
-  const handleScroll = () => {
-    if (lineNumbersRef.current && textareaRef.current) {
-      lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
+  // Helper function to determine if a line is part of a folded section
+  const isFoldedSection = (
+    text: string,
+    foldStart: number,
+    currentLine: number,
+  ) => {
+    const lines = text.split("\n");
+    const startLine = lines[foldStart];
+
+    let openChar = startLine.trim().slice(-1);
+    let closeChar;
+
+    switch (openChar) {
+      case "{":
+        closeChar = "}";
+        break;
+      case "[":
+        closeChar = "]";
+        break;
+      case "(":
+        closeChar = ")";
+        break;
+      default:
+        return false;
     }
-  };
 
-  // Simple indentation logic
-  const getIndentation = (line: string): string => {
-    const currentIndentation = line.match(/^\s*/)?.[0] || "";
+    let depth = 1;
+    for (let i = foldStart + 1; i <= currentLine; i++) {
+      const line = lines[i];
+      for (const char of line) {
+        if (char === openChar) depth++;
+        if (char === closeChar) depth--;
 
-    // Check if we need to increase indentation
-    if (/[{[(]$/.test(line.trim())) {
-      return currentIndentation + "  "; // Add two spaces for indentation
+        if (depth === 0) return false;
+      }
     }
 
-    // Keep the same indentation level
-    return currentIndentation;
+    return depth > 0;
   };
 
   // Toggle line folding
@@ -275,28 +148,75 @@ export default function Editor({
     }
   };
 
-  // Search in code
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchTerm || !textareaRef.current) return;
+  // Search logic
+  const getSearchMatches = () => {
+    if (!searchTerm) return { matches: [], currentMatch: 0, totalMatches: 0 };
 
-    const searchIndex = code.indexOf(
-      searchTerm,
-      textareaRef.current.selectionStart + 1,
-    );
-    if (searchIndex !== -1) {
-      textareaRef.current.focus();
-      textareaRef.current.setSelectionRange(
-        searchIndex,
-        searchIndex + searchTerm.length,
-      );
+    const indices: number[] = [];
+    let startIndex = 0;
+    let index;
 
-      // Ensure the found text is visible
-      const textBeforeSearch = code.substring(0, searchIndex);
-      const linesBeforeSearch = (textBeforeSearch.match(/\n/g) || []).length;
-      const lineHeight = 24; // Approximate line height in pixels
-      textareaRef.current.scrollTop = linesBeforeSearch * lineHeight;
+    while (
+      (index = code
+        .toLowerCase()
+        .indexOf(searchTerm.toLowerCase(), startIndex)) > -1
+    ) {
+      indices.push(index);
+      startIndex = index + searchTerm.length;
     }
+
+    return {
+      matches: indices,
+      currentMatch: indices.length > 0 ? currentMatchIndex + 1 : 0,
+      totalMatches: indices.length,
+    };
+  };
+
+  const executeSearch = () => {
+    if (!searchTerm) return;
+
+    const { matches: searchMatches } = getSearchMatches();
+    setMatches(searchMatches);
+    setCurrentMatchIndex(0);
+
+    if (searchMatches.length > 0) {
+      highlightMatch(searchMatches[0]);
+    }
+  };
+
+  const findNext = () => {
+    const { matches } = getSearchMatches();
+    if (matches.length === 0) return;
+
+    const nextIndex = (currentMatchIndex + 1) % matches.length;
+    setCurrentMatchIndex(nextIndex);
+    highlightMatch(matches[nextIndex]);
+  };
+
+  const findPrevious = () => {
+    const { matches } = getSearchMatches();
+    if (matches.length === 0) return;
+
+    const prevIndex = (currentMatchIndex - 1 + matches.length) % matches.length;
+    setCurrentMatchIndex(prevIndex);
+    highlightMatch(matches[prevIndex]);
+  };
+
+  const highlightMatch = (position: number) => {
+    if (!textareaRef.current) return;
+
+    textareaRef.current.focus();
+    textareaRef.current.setSelectionRange(
+      position,
+      position + searchTerm.length,
+    );
+
+    // Update cursor position
+    const textBeforeCursor = code.substring(0, position);
+    const line = (textBeforeCursor.match(/\n/g) || []).length + 1;
+    const lastNewLine = textBeforeCursor.lastIndexOf("\n");
+    const column = lastNewLine === -1 ? position + 1 : position - lastNewLine;
+    setCursorPosition({ line, column });
   };
 
   return (
@@ -306,7 +226,13 @@ export default function Editor({
         theme === "dark"
           ? "bg-gray-800 border-gray-700"
           : "bg-white border-gray-200"
-      } ${isFocused && theme === "dark" ? "border-emerald-500/50" : isFocused ? "border-emerald-600/50" : ""}`}
+      } ${
+        isFocused && theme === "dark"
+          ? "border-emerald-500/50"
+          : isFocused
+            ? "border-emerald-600/50"
+            : ""
+      }`}
     >
       {/* Editor toolbar */}
       <div
@@ -330,7 +256,6 @@ export default function Editor({
           </button>
           <button
             onClick={() => {
-              // Mock save functionality
               const blob = new Blob([code], { type: "text/plain" });
               const url = URL.createObjectURL(blob);
               const a = document.createElement("a");
@@ -374,93 +299,123 @@ export default function Editor({
         </div>
       </div>
 
-      {/* Search bar */}
+      {/* Search panel */}
       {isSearchOpen && (
         <div
-          className={`absolute top-12 right-4 z-10 p-2 rounded-md shadow-lg border ${
+          className={`p-2 flex items-center gap-2 border-b ${
             theme === "dark"
-              ? "bg-gray-800 border-gray-700"
-              : "bg-white border-gray-200"
+              ? "bg-gray-900 border-gray-700"
+              : "bg-gray-100 border-gray-200"
           }`}
         >
-          <form onSubmit={handleSearch} className="flex items-center gap-2">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search..."
-              className={`px-2 py-1 text-sm rounded-md border outline-none ${
-                theme === "dark"
-                  ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400"
-                  : "bg-gray-50 border-gray-300 text-gray-800 placeholder-gray-500"
-              }`}
-              autoFocus
-            />
-            <button
-              type="submit"
-              className={`px-2 py-1 text-sm rounded-md ${
-                theme === "dark"
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                  : "bg-emerald-600 hover:bg-emerald-700 text-white"
-              }`}
-            >
-              Find
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsSearchOpen(false)}
-              className={`px-2 py-1 text-sm rounded-md ${
-                theme === "dark"
-                  ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
-                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-              }`}
-            >
-              Close
-            </button>
-          </form>
+          <Search
+            size={14}
+            className={theme === "dark" ? "text-gray-400" : "text-gray-600"}
+          />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                executeSearch();
+              }
+            }}
+            placeholder="Search"
+            className={`flex-1 bg-transparent border outline-none px-2 py-1 rounded ${
+              theme === "dark"
+                ? "border-gray-700 text-gray-200"
+                : "border-gray-300 text-gray-800"
+            }`}
+            autoFocus
+          />
+          <button
+            onClick={executeSearch}
+            className={`px-2 py-1 rounded ${
+              theme === "dark"
+                ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+            }`}
+          >
+            Search
+          </button>
+          <div className="text-xs text-gray-500">
+            {getSearchMatches().currentMatch}/{getSearchMatches().totalMatches}
+          </div>
+          <button
+            onClick={findPrevious}
+            className={`p-1 rounded ${
+              theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
+            }`}
+          >
+            ↑
+          </button>
+          <button
+            onClick={findNext}
+            className={`p-1 rounded ${
+              theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
+            }`}
+          >
+            ↓
+          </button>
+          <button
+            onClick={() => setIsSearchOpen(false)}
+            className={`p-1 rounded ${
+              theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
+            }`}
+          >
+            ✕
+          </button>
         </div>
       )}
 
       {/* Line numbers with fold indicators */}
       <div
         ref={lineNumbersRef}
-        className={`absolute left-0 top-12 bottom-6 w-12 overflow-hidden select-none ${
+        className={`absolute left-0 top-0 bottom-6 w-12 overflow-hidden select-none ${
           theme === "dark"
             ? "bg-gray-900 text-gray-500"
             : "bg-gray-100 text-gray-500"
         }`}
+        style={{
+          top: isSearchOpen ? "calc(2.5rem + 2.5rem)" : "2.5rem",
+          paddingTop: "16px", // Match the textarea's padding-top (p-4)
+          lineHeight: "24px", // Consistent line height
+          overflowY: "hidden",
+        }}
       >
-        {Array.from({ length: lineCount }).map((_, i) => (
+        {renderLineNumbers().map((lineNum) => (
           <div
-            key={i}
-            className={`flex items-center justify-end pr-2 h-6 group ${
-              code.split("\n")[i]?.trim().endsWith("{") ||
-              code.split("\n")[i]?.trim().endsWith("(") ||
-              code.split("\n")[i]?.trim().endsWith("[")
+            key={lineNum}
+            className={`flex items-center justify-end pr-2 h-6 leading-6 ${
+              code.split("\n")[lineNum - 1]?.trim().endsWith("{") ||
+              code.split("\n")[lineNum - 1]?.trim().endsWith("(") ||
+              code.split("\n")[lineNum - 1]?.trim().endsWith("[")
                 ? "cursor-pointer"
                 : ""
             }`}
             onClick={() => {
               if (
-                code.split("\n")[i]?.trim().endsWith("{") ||
-                code.split("\n")[i]?.trim().endsWith("(") ||
-                code.split("\n")[i]?.trim().endsWith("[")
+                code.split("\n")[lineNum - 1]?.trim().endsWith("{") ||
+                code.split("\n")[lineNum - 1]?.trim().endsWith("(") ||
+                code.split("\n")[lineNum - 1]?.trim().endsWith("[")
               ) {
-                toggleFold(i + 1);
+                toggleFold(lineNum);
               }
             }}
           >
             <span className="mr-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              {(code.split("\n")[i]?.trim().endsWith("{") ||
-                code.split("\n")[i]?.trim().endsWith("(") ||
-                code.split("\n")[i]?.trim().endsWith("[")) &&
-                (foldedLines.includes(i + 1) ? (
+              {(code.split("\n")[lineNum - 1]?.trim().endsWith("{") ||
+                code.split("\n")[lineNum - 1]?.trim().endsWith("(") ||
+                code.split("\n")[lineNum - 1]?.trim().endsWith("[")) &&
+                (foldedLines.includes(lineNum) ? (
                   <ChevronRight size={12} />
                 ) : (
                   <ChevronDown size={12} />
                 ))}
             </span>
-            <span>{i + 1}</span>
+            <span>{lineNum}</span>
           </div>
         ))}
       </div>
@@ -470,13 +425,18 @@ export default function Editor({
         ref={textareaRef}
         value={code}
         onChange={(e) => setCode(e.target.value)}
-        onKeyDown={handleKeyDown}
-        onScroll={handleScroll}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        onClick={updateCursorPosition}
-        onKeyUp={updateCursorPosition}
-        className={`w-full h-[calc(100%-3rem)] resize-none outline-none p-4 pl-14 font-mono ${
+        onClick={() => {
+          const cursorPos = textareaRef.current?.selectionStart || 0;
+          const textBeforeCursor = code.substring(0, cursorPos);
+          const line = (textBeforeCursor.match(/\n/g) || []).length + 1;
+          const lastNewLine = textBeforeCursor.lastIndexOf("\n");
+          const column =
+            lastNewLine === -1 ? cursorPos + 1 : cursorPos - lastNewLine;
+          setCursorPosition({ line, column });
+        }}
+        className={`w-full h-[calc(100%-3rem)] resize-none outline-none p-4 pl-14 font-mono leading-6 ${
           theme === "dark"
             ? "bg-gray-800 text-gray-100 caret-emerald-500"
             : "bg-white text-gray-900 caret-emerald-600"

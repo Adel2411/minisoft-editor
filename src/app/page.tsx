@@ -6,13 +6,10 @@ import Editor from "@/components/CodeEditor";
 import ResultPanel from "@/components/ResultPanel";
 import FileModal from "@/components/FileModal";
 import {
-  Maximize2,
-  Minimize2,
   Code,
   Terminal,
   FileText,
   Database,
-  X,
   FolderOpen,
   Save,
   Play,
@@ -21,28 +18,27 @@ import {
   Settings,
 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
+import ErrorReporter from "@/components/ErrorReporter";
 
 export default function Home() {
   const [code, setCode] = useState<string>(
-    `
-  MainPrgm Factorial;
-  Var
-    let n: Int;
-    let result: Float = 4.2;
-    let i: Int = (-10);
-  BeginPg
-  {
-    n := 5;
-    result := 1.0;
-    
-    for i from 1 to n step 1 {
-      result := result * i;
-    }
-    
-    output(result);  <!- Outputs: 120 -!>
+    `MainPrgm Factorial;
+Var
+  let n: Int;
+  let result: Float = 4.2;
+  let i: Int = (-10);
+BeginPg
+{
+  n := 5;
+  result := 1.0;
+  
+  for i from 1 to n step 1 {
+    result := result * i;
   }
-  EndPg;
-  `,
+  
+  output(result);  <!- Outputs: 120 -!>
+}
+EndPg;`,
   );
   const [compilationResult, setCompilationResult] =
     useState<CompilationResult | null>(null);
@@ -50,7 +46,6 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<string>("editor");
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [editorReady, setEditorReady] = useState<boolean>(false);
-  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [showWelcome, setShowWelcome] = useState<boolean>(true);
   const [isFileModalOpen, setIsFileModalOpen] = useState<boolean>(false);
   const [currentFileName, setCurrentFileName] = useState<string | null>(null);
@@ -91,7 +86,6 @@ export default function Home() {
       );
       setCompilationResult(compilationResult);
     } catch (err: unknown) {
-      console.error(err);
       setError(`Error: ${String(err)}`);
     } finally {
       setIsCompiling(false);
@@ -100,10 +94,6 @@ export default function Home() {
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
-  };
-
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
   };
 
   const handleFileUpload = (content: string, fileName: string) => {
@@ -322,18 +312,6 @@ export default function Home() {
             </button>
 
             <button
-              onClick={toggleFullscreen}
-              className={`p-2 rounded-md transition-colors ${
-                theme === "dark"
-                  ? "hover:bg-gray-800 text-gray-300"
-                  : "hover:bg-gray-200 text-gray-700"
-              }`}
-              title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-            >
-              {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-            </button>
-
-            <button
               className={`p-2 rounded-md transition-colors ${
                 theme === "dark"
                   ? "hover:bg-gray-800 text-gray-300"
@@ -347,13 +325,11 @@ export default function Home() {
         </div>
       </header>
 
-      <div
-        className={`flex flex-col md:flex-row flex-1 ${isFullscreen ? "fixed inset-0 z-50 pt-[57px]" : ""}`}
-      >
+      <div className={`flex flex-col md:flex-row flex-1`}>
         <div
           className={`w-full md:w-1/2 border-r transition-colors duration-300 ${
             theme === "dark" ? "border-gray-700" : "border-gray-200"
-          } ${isFullscreen ? "h-full" : ""}`}
+          } `}
         >
           <div
             className={`flex border-b transition-colors duration-300 ${
@@ -388,7 +364,7 @@ export default function Home() {
           <div
             className={`w-full md:w-1/2 transition-colors duration-300 ${
               theme === "dark" ? "bg-gray-800" : "bg-white"
-            } ${isFullscreen ? "h-full overflow-auto" : ""}`}
+            } `}
           >
             <div
               className={`flex border-b transition-colors duration-300 ${
@@ -447,19 +423,6 @@ export default function Home() {
                 <Terminal size={16} />
                 Quadruples
               </button>
-              {isFullscreen && (
-                <button
-                  onClick={() => setCompilationResult(null)}
-                  className={`ml-auto px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors duration-200 ${
-                    theme === "dark"
-                      ? "hover:bg-gray-700 text-gray-400"
-                      : "hover:bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  <X size={16} />
-                  Close
-                </button>
-              )}
             </div>
             <ResultPanel
               result={compilationResult}
@@ -469,24 +432,12 @@ export default function Home() {
           </div>
         )}
       </div>
-
-      {/* Footer */}
-      {!isFullscreen && (
-        <footer
-          className={`py-3 px-4 text-xs border-t transition-colors duration-300 ${
-            theme === "dark"
-              ? "border-gray-700 text-gray-400"
-              : "border-gray-200 text-gray-600"
-          }`}
-        >
-          <div className="flex justify-between items-center">
-            <div>MiniSoft Editor v1.0</div>
-            <div>
-              Keyboard shortcuts: Ctrl+S (Save), Ctrl+F (Search), Ctrl+Enter
-              (Compile)
-            </div>
-          </div>
-        </footer>
+      {error && (
+        <ErrorReporter
+          error={error}
+          onDismiss={() => setError(null)}
+          theme={theme}
+        />
       )}
     </main>
   );
