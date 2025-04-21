@@ -1,5 +1,5 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-use minisoft_compiler::run_compiler;
+use minisoft_compiler::{run_compiler, SerializableCompilationResult};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::command;
 
@@ -11,7 +11,7 @@ fn greet() -> String {
 }
 
 #[command]
-fn compile_minisoft(code: String, verbose: bool) -> Result<String, String> {
+fn compile_minisoft(code: String, verbose: bool) -> Result<SerializableCompilationResult, String> {
   run_compiler(code, verbose)
 }
 
