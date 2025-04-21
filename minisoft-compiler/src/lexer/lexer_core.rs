@@ -49,8 +49,8 @@ pub fn tokenize(source: &str) -> (Vec<TokenWithMetaData>, Vec<LexicalError>) {
     (valid_tokens, errors)
 }
 
-fn get_position<'a>(lexer: &Lexer<'a, Token>, byte_offset: usize) -> (usize, usize) {
+fn get_position(lexer: &Lexer<Token>, byte_offset: usize) -> (usize, usize) {
     let line = lexer.extras.line_number;
-    let col = byte_offset - lexer.extras.line_start;
+    let col = byte_offset - lexer.extras.line_start + 1;
     (line, col)
 }
