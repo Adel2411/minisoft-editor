@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "tauri-nextjs-template",
+  "productName": "minisoft-editor",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "tauri.conf.json",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:3000",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "tauri-nextjs-template",
+        "title": "MiniSoft Editor",
         "width": 800,
         "height": 600,
         "resizable": true,
