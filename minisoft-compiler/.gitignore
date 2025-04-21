@@ -1,0 +1,10 @@
+/target
+indent.log
+
+# Ignore everything in report folder
+/docs/*
+# Keep only these specific files
+!/docs/report.tex
+!/docs/out/
+/docs/out/*
+!/docs/out/report.pdf

@@ -1,0 +1,452 @@
+// This file uses LALRPOP to define the parser grammar for our language.
+
+use std::str::FromStr;
+use std::ops::Range;
+use crate::lexer::token::Token;
+use crate::parser::ast::{Located, Program, DeclarationKind, StatementKind, ExpressionKind, Operator, UnaryOperator, Type, Literal, LiteralKind};
+
+grammar<'input>;
+
+// External token type from our Logos lexer
+extern {
+    type Location = usize;
+    type Error = String;
+
+    enum Token {
+        // Language keywords
+        "MainPrgm" => Token::MainPrgm,
+        "Var" => Token::Var,
+        "BeginPg" => Token::BeginPg,
+        "EndPg" => Token::EndPg,
+        "let" => Token::Let,
+        "Int" => Token::Int,
+        "Float" => Token::Float,
+        
+        // Control flow
+        "if" => Token::If,
+        "then" => Token::Then,
+        "else" => Token::Else,
+        "while" => Token::While,
+        "for" => Token::For,
+        "do" => Token::Do,
+        "from" => Token::From,
+        "to" => Token::To,
+        "step" => Token::Step,
+        
+        // I/O operations
+        "input" => Token::Input,
+        "output" => Token::Output,
+        "@define" => Token::Define,
+        "Const" => Token::Const,
+        
+        // Punctuation
+        ";" => Token::Semicolon,
+        "," => Token::Comma,
+        ":" => Token::Colon,
+        "[" => Token::OpenBracket,
+        "]" => Token::CloseBracket,
+        "(" => Token::OpenParen,
+        ")" => Token::CloseParen,
+        "{" => Token::OpenBrace,
+        "}" => Token::CloseBrace,
+        
+        // Assignment
+        ":=" => Token::Assign,
+        "=" => Token::Equals,
+        
+        // Arithmetic operators
+        "+" => Token::Plus,
+        "-" => Token::Minus,
+        "*" => Token::Multiply,
+        "/" => Token::Divide,
+        
+        // Comparison operators
+        ">" => Token::GreaterThan,
+        "<" => Token::LessThan,
+        ">=" => Token::GreaterEqual,
+        "<=" => Token::LessEqual,
+        "==" => Token::Equal,
+        "!=" => Token::NotEqual,
+        
+        // Logical operators
+        "AND" => Token::And,
+        "OR" => Token::Or,
+        "!" => Token::Not,
+        
+        // Literals and identifiers
+        Int => Token::IntLiteral(<i32>),
+        Float => Token::FloatLiteral(<f32>),
+        String => Token::StringLiteral(<String>),
+        Idf => Token::Identifier(<String>),
+    }
+}
+
+// Program rule (entry point) - defines the main structure (name, declarations, statements).
+pub Program: Located<Program> = {
+    <l:@L> "MainPrgm" <name:Id> ";" "Var" "BeginPg" <stmts:Scope> "EndPg" ";" <r:@R> =>  {
+        Located {
+            node: Program {
+                name,
+                declarations: vec![],
+                statements: stmts,
+            },
+            span: l..r,
+        }
+    },
+    <l:@L> "MainPrgm" <name:Id> ";" "Var" <decls:Declaration+> "BeginPg" <stmts:Scope> "EndPg" ";" <r:@R> =>  {
+        Located {
+            node: Program {
+                name,
+                declarations: decls,
+                statements: stmts,
+            },
+            span: l..r,
+        }
+    },
+};
+
+// Declaration rules: Manage different ways to declare variables, arrays, and constants.
+Declaration: Located<DeclarationKind> = {
+    <l:@L> "let" <names:IdList> ":" <ty:TypeSpec> ";" <r:@R> => {
+        Located {
+            node: DeclarationKind::Variable(names, ty),
+            span: l..r,
+        }
+    },
+    <l:@L> "let" <names:IdList> ":" "[" <ty:TypeSpec> ";" <size:Int> "]" ";" <r:@R> => {
+        Located {
+            node: DeclarationKind::Array(names, ty, size as usize),
+            span: l..r,
+        }
+    },
+    <l:@L> "let" <names:IdList> ":" <ty:TypeSpec> "=" <value:Expression> ";" <r:@R> => {
+        Located {
+            node: DeclarationKind::VariableWithInit(names, ty, value),
+            span: l..r,
+        }
+    },
+    <l:@L> "let" <names:IdList> ":" "[" <ty:TypeSpec> ";" <size:Int> "]" "=" "{" <values:ExprList>"}" ";" <r:@R> => {
+        Located {
+            node: DeclarationKind::ArrayWithInit(names, ty, size as usize, values),
+            span: l..r,
+        }
+    },
+    <l:@L> "@define" "Const" <name:Id> ":" <ty:TypeSpec> "=" <value:LiteralValue> ";" <r:@R> => {
+        Located {
+            node: DeclarationKind::Constant(name, ty, value),
+            span: l..r,
+        }
+    }
+};
+
+// Type specification - specifies possible data types like Int and Float.
+TypeSpec: Type = {
+    "Int" => Type::Int,
+    "Float" => Type::Float,
+};
+
+Scope: Vec<Located<StatementKind>> = {
+    "{" "}" => vec![],
+    "{" <stmts:Statement+> "}" => stmts,
+};
+
+// Statement rules - define different control flow and I/O statements.
+Statement: Located<StatementKind> = {
+    <l:@L> <target:LValue> ":=" <value:Expression> ";" <r:@R> => {
+        Located {
+            node: StatementKind::Assignment(target, value),
+            span: l..r,
+        }
+    },
+    <l:@L> "if" "(" <cond:Expression> ")" "then" <then_block:Scope> <r:@R> => {
+        Located {
+            node: StatementKind::IfThen(cond, then_block),
+            span: l..r,
+        }
+    },
+    <l:@L> "if" "(" <cond:Expression> ")" "then" <then_block:Scope> "else" <else_block:Scope> <r:@R> => {
+        Located {
+            node: StatementKind::IfThenElse(
+                cond, 
+                then_block,
+                else_block
+            ),
+            span: l..r,
+        }
+    },
+    <l:@L> "do" <body:Scope> "while" "(" <cond:Expression> ")" ";" <r:@R> => {
+        Located {
+            node: StatementKind::DoWhile(body, cond),
+            span: l..r,
+        }
+    },
+    <l:@L> "for" <var:LValue> "from" <from:Expression> "to" <to:Expression> "step" <step:Expression> <body:Scope> <r:@R> => {
+        Located {
+            node: StatementKind::For(var, from, to, step, body),
+            span: l..r,
+        }
+    },
+    <l:@L> "input" "(" <var:LValue> ")" ";" <r:@R> => {
+        Located {
+            node: StatementKind::Input(var),
+            span: l..r,
+        }
+    },
+    <l:@L> "output" "(" <exprs:OutputExprList> ")" ";" <r:@R> => {
+        Located {
+            node: StatementKind::Output(exprs),
+            span: l..r,
+        }
+    },
+};
+
+// LValue rule: Determines valid left-hand side targets in assignments, like identifiers or array elements.
+LValue: Located<ExpressionKind> = {
+    <l:@L> <id:Id> <r:@R> => Located {
+        node: ExpressionKind::Identifier(id),
+        span: l..r,
+    },
+    <l:@L> <id:Id> "[" <idx:Expression> "]" <r:@R> => Located {
+        node: ExpressionKind::ArrayAccess(id, Box::new(idx)),
+        span: l..r,
+    },
+};
+
+// Expression rules
+Expression: Located<ExpressionKind> = {
+    LogicalExpr,
+};
+
+LogicalExpr: Located<ExpressionKind> = {
+    <l:@L> <lhs:LogicalExpr> "OR" <rhs:UnaryExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::Or, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    <l:@L> <lhs:LogicalExpr> "AND" <rhs:UnaryExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::And, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    UnaryExpr,
+};
+
+UnaryExpr: Located<ExpressionKind> = {
+    <l:@L> "!" <expr:ComparisonExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::UnaryOp(UnaryOperator::Not, Box::new(expr)),
+            span: l..r,
+        }
+    },
+    ComparisonExpr,
+};
+
+ComparisonExpr: Located<ExpressionKind> = {
+    <l:@L> <lhs:ComparisonExpr> "==" <rhs:AdditiveExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::Equal, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    <l:@L> <lhs:ComparisonExpr> "!=" <rhs:AdditiveExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::NotEqual, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    <l:@L> <lhs:ComparisonExpr> "<" <rhs:AdditiveExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::LessThan, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    <l:@L> <lhs:ComparisonExpr> ">" <rhs:AdditiveExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::GreaterThan, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    <l:@L> <lhs:ComparisonExpr> "<=" <rhs:AdditiveExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::LessEqual, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    <l:@L> <lhs:ComparisonExpr> ">=" <rhs:AdditiveExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::GreaterEqual, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    AdditiveExpr,
+};
+
+AdditiveExpr: Located<ExpressionKind> = {
+    <l:@L> <lhs:AdditiveExpr> "+" <rhs:MultiplicativeExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::Add, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    <l:@L> <lhs:AdditiveExpr> "-" <rhs:MultiplicativeExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::Subtract, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    MultiplicativeExpr,
+};
+
+MultiplicativeExpr: Located<ExpressionKind> = {
+    <l:@L> <lhs:MultiplicativeExpr> "*" <rhs:PrimaryExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::Multiply, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    <l:@L> <lhs:MultiplicativeExpr> "/" <rhs:PrimaryExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::Divide, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    PrimaryExpr,
+};
+
+PrimaryExpr: Located<ExpressionKind> = {
+    <l:@L> <id:Id> <r:@R> => Located {
+        node: ExpressionKind::Identifier(id),
+        span: l..r,
+    },
+    <l:@L> <id:Id> "[" <idx:Expression> "]" <r:@R> => Located {
+        node: ExpressionKind::ArrayAccess(id, Box::new(idx)),
+        span: l..r,
+    },
+    <l:@L> <lit:LiteralValue> <r:@R> => Located {
+        node: ExpressionKind::Literal(lit),
+        span: l..r,
+    },
+    "(" <expr:Expression> ")" => expr,
+};
+
+// Literal values - parse integer, float, and string constants.
+LiteralValue: Located<LiteralKind> = {
+    <l:@L> <n:Int> <r:@R> => Located {
+        node: LiteralKind::Int(n),
+        span: l..r,
+    },
+    <l:@L> <f:Float> <r:@R> => Located {
+        node: LiteralKind::Float(f),
+        span: l..r,
+    },
+};
+
+// Helper rules for comma-separated lists
+IdList: Vec<String> = {
+    <v:(<Id> ",")*> <e:Id> => {
+        let mut v = v;
+        v.push(e);
+        v
+    }
+};
+
+ExprList: Vec<Located<ExpressionKind>> = {
+    <v:(<Expression> ",")*> <e:Expression> => {
+        let mut v = v;
+        v.push(e);
+        v
+    },
+    => vec![],
+};
+
+// Helper rules
+Id: String = {
+    Idf => <>,
+};
+
+IntLiteral: i32 = {
+    Int => <>,
+};
+
+FloatLiteral: f32 = {
+    Float => <>,
+};
+
+StringLiteral: String = {
+    String => <>,
+};
+
+// Restrict StringLiteral to only be used in the output function
+OutputExprList: Vec<Located<ExpressionKind>> = {
+    <v:(<OutputExpression> ",")*> <e:OutputExpression> => {
+        let mut v = v;
+        v.push(e);
+        v
+    },
+    => vec![],
+};
+
+OutputExpression: Located<ExpressionKind> = {
+    <l:@L> <lit:StringLiteral> <r:@R> => {
+        let string_literal = Located {
+            node: LiteralKind::String(lit),
+            span: l..r,
+        };
+        Located {
+            node: ExpressionKind::Literal(string_literal),
+            span: l..r,
+        }
+    },
+    // Include arithmetic expressions
+    OutputAdditiveExpr,
+};
+
+OutputAdditiveExpr: Located<ExpressionKind> = {
+    <l:@L> <lhs:OutputAdditiveExpr> "+" <rhs:OutputMultiplicativeExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::Add, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    <l:@L> <lhs:OutputAdditiveExpr> "-" <rhs:OutputMultiplicativeExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::Subtract, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    OutputMultiplicativeExpr,
+};
+
+OutputMultiplicativeExpr: Located<ExpressionKind> = {
+    <l:@L> <lhs:OutputMultiplicativeExpr> "*" <rhs:OutputPrimaryExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::Multiply, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    <l:@L> <lhs:OutputMultiplicativeExpr> "/" <rhs:OutputPrimaryExpr> <r:@R> => {
+        Located {
+            node: ExpressionKind::BinaryOp(Box::new(lhs), Operator::Divide, Box::new(rhs)),
+            span: l..r,
+        }
+    },
+    OutputPrimaryExpr,
+};
+
+OutputPrimaryExpr: Located<ExpressionKind> = {
+    <l:@L> <id:Id> <r:@R> => Located {
+        node: ExpressionKind::Identifier(id),
+        span: l..r,
+    },
+    <l:@L> <id:Id> "[" <idx:Expression> "]" <r:@R> => Located {
+        node: ExpressionKind::ArrayAccess(id, Box::new(idx)),
+        span: l..r,
+    },
+    <l:@L> <lit:LiteralValue> <r:@R> => Located {
+        node: ExpressionKind::Literal(lit),
+        span: l..r,
+    },
+    "(" <expr:OutputAdditiveExpr> ")" => expr,
+};
