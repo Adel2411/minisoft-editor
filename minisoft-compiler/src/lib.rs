@@ -6,6 +6,7 @@ pub mod parser;
 pub mod semantics;
 
 use crate::compiler::Compiler;
+use lexer::error::LexicalErrorType;
 use parser::ast::{
     Declaration, DeclarationKind, Expression, ExpressionKind, Literal, LiteralKind, Program,
     Statement, StatementKind,
@@ -406,14 +407,25 @@ pub fn run_compiler(code: String, verbose: bool) -> Result<SerializableCompilati
                     let lexical_errors_serialized = lexical_errors
                         .iter()
                         .map(|e| SerializableLexicalError {
-                            error_type: SerializableLexicalErrorType::InvalidToken, // Simplification
+                            error_type: match e.error_type {
+                                LexicalErrorType::UnterminatedString => SerializableLexicalErrorType::UnterminatedString,
+                                LexicalErrorType::NonAsciiCharacters => SerializableLexicalErrorType::NonAsciiCharacters,
+                                LexicalErrorType::IdentifierTooLong => SerializableLexicalErrorType::IdentifierTooLong,
+                                LexicalErrorType::InvalidIdentifier => SerializableLexicalErrorType::InvalidIdentifier,
+                                LexicalErrorType::ConsecutiveUnderscores => SerializableLexicalErrorType::ConsecutiveUnderscores,
+                                LexicalErrorType::TrailingUnderscore => SerializableLexicalErrorType::TrailingUnderscore,
+                                LexicalErrorType::IdentifierStartsWithNumber => SerializableLexicalErrorType::IdentifierStartsWithNumber,
+                                LexicalErrorType::IntegerOutOfRange => SerializableLexicalErrorType::IntegerOutOfRange,
+                                LexicalErrorType::SignedNumberNotParenthesized => SerializableLexicalErrorType::SignedNumberNotParenthesized,
+                                LexicalErrorType::InvalidToken => SerializableLexicalErrorType::InvalidToken,
+                            },
                             invalid_token: e.invalid_token.clone(),
                             position: SerializableErrorPosition {
                                 line: e.line,
                                 column: e.column,
                             },
-                            message: format!("Lexical error: {:?} at token '{}'", e.error_type, e.invalid_token),
-                            suggestion: None, // No suggestion field available
+                            message: format!("Lexical error: {:?}", e.error_type),
+                            suggestion: None,
                         })
                         .collect();
 
@@ -487,7 +499,7 @@ pub fn run_compiler(code: String, verbose: bool) -> Result<SerializableCompilati
                     let semantic_errors = analyzer.get_errors();
                     let semantic_errors_serialized = semantic_errors
                         .iter()
-                        .map(|e| SerializableSemanticError::EmptyProgram) // Simplification
+                        .map(|_| SerializableSemanticError::EmptyProgram) // Simplification
                         .collect();
 
                     // Return with semantic errors
@@ -518,7 +530,7 @@ pub fn run_compiler(code: String, verbose: bool) -> Result<SerializableCompilati
                 }
             }
         }
-        Err(err) => {
+        Err(_) => {
             // Compiler initialization failed
             Ok(SerializableCompilationResult {
                 tokens: vec![],

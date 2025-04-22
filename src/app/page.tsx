@@ -445,6 +445,7 @@ EndPg;`,
       </div>
       {error && (
         <ErrorReporter
+          sourceCode={code}
           errors={error}
           onDismiss={() => setError(null)}
           theme={theme}
