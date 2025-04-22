@@ -11,7 +11,7 @@ export default function ASTViewer({
   return (
     <div className="animate-fadeIn">
       <div
-        className={`ast-viewer p-4 rounded-lg overflow-auto shadow-sm border animate-fadeIn ${
+        className={`p-4 rounded-lg overflow-auto shadow-sm border animate-fadeIn ${
           theme === "dark"
             ? "bg-gray-900 border-gray-700"
             : "bg-gray-50 border-gray-200"

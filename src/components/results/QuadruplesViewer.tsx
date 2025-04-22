@@ -310,6 +310,7 @@ export default function QuadruplesViewer({
             ? "bg-gray-900 text-gray-300 border-gray-700"
             : "bg-gray-50 text-gray-800 border-gray-200"
         }`}
+        style={{ maxHeight: "calc(100vh - 250px)" }}
       >
         <div className="space-y-1">
           {filteredQuadruples.map((quad, index) => (

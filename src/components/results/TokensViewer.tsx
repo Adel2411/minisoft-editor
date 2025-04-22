@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import type { Token } from "@/types";
 
 interface TokensViewerProps {
@@ -11,6 +12,8 @@ export default function TokensViewer({
   theme,
   searchTerm = "",
 }: TokensViewerProps) {
+  const tableRef = useRef<HTMLDivElement>(null);
+
   const filterTokens = (tokens: Token[]) => {
     if (!searchTerm) return tokens;
     return tokens.filter(
@@ -19,6 +22,8 @@ export default function TokensViewer({
         token.value.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   };
+
+  const filteredTokens = filterTokens(tokens);
 
   const getTokenColor = (kind: string, theme: "dark" | "light"): string => {
     const kindLower = kind.toLowerCase();
@@ -58,11 +63,12 @@ export default function TokensViewer({
   };
 
   return (
-    <div className="animate-fadeIn">
+    <div className="animate-fadeIn" ref={tableRef}>
       <div
         className={`overflow-auto rounded-lg border shadow-sm ${
           theme === "dark" ? "border-gray-700" : "border-gray-200"
         }`}
+        style={{ maxHeight: "calc(100vh - 200px)" }}
       >
         <table className="w-full">
           <thead
@@ -87,7 +93,7 @@ export default function TokensViewer({
                 : "divide-y divide-gray-200"
             }
           >
-            {filterTokens(tokens).map((token: Token, index: number) => (
+            {filteredTokens.map((token: Token, index: number) => (
               <tr
                 key={index}
                 className={`transition-colors hover:bg-opacity-50 ${
@@ -102,7 +108,10 @@ export default function TokensViewer({
               >
                 <td className="px-4 py-2">
                   <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${getTokenColor(token.kind, theme)}`}
+                    className={`px-2 py-1 rounded text-xs font-medium ${getTokenColor(
+                      token.kind,
+                      theme,
+                    )}`}
                   >
                     {token.kind}
                   </span>

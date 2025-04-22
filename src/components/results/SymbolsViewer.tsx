@@ -55,12 +55,15 @@ export default function SymbolsViewer({
     }
   };
 
+  const filteredSymbols = filterSymbols(symbolTable);
+
   return (
     <div className="animate-fadeIn">
       <div
         className={`overflow-auto rounded-lg border shadow-sm ${
           theme === "dark" ? "border-gray-700" : "border-gray-200"
         }`}
+        style={{ maxHeight: "calc(100vh - 200px)" }}
       >
         <table className="w-full">
           <thead
@@ -86,7 +89,7 @@ export default function SymbolsViewer({
                 : "divide-y divide-gray-200"
             }
           >
-            {filterSymbols(symbolTable).map((symbol: Symbol, index: number) => (
+            {filteredSymbols.map((symbol: Symbol, index: number) => (
               <tr
                 key={index}
                 className={`transition-colors hover:bg-opacity-50 ${
@@ -113,6 +116,13 @@ export default function SymbolsViewer({
                 <td className="px-4 py-2">{symbol.column}</td>
               </tr>
             ))}
+            {filteredSymbols.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                  No symbols found{searchTerm ? " matching your search" : ""}
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

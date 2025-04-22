@@ -1,5 +1,5 @@
-use crate::error_reporter::ErrorReporter;
 use crate::error_reporter::format_code_context;
+use crate::error_reporter::ErrorReporter;
 use colored::Colorize;
 use std::fmt;
 
@@ -40,7 +40,10 @@ pub enum SemanticError {
     },
 
     /// Division by zero
-    DivisionByZero { line: usize, column: usize },
+    DivisionByZero {
+        line: usize,
+        column: usize,
+    },
 
     /// Attempt to modify a constant
     ConstantModification {
@@ -138,7 +141,7 @@ impl ErrorReporter for SemanticError {
                 actual,
                 ..
             } => Some(format!(
-                "Expected array size {} but found {} for '{}'",
+                "Consider adjusting '{}' from size {} to {}.",
                 expected, actual, name
             )),
             SemanticError::UndeclaredIdentifier { name, .. } => {
@@ -184,9 +187,10 @@ impl ErrorReporter for SemanticError {
                 size,
                 size - 1
             )),
-            SemanticError::NonArrayIndexing { var_name, .. } => {
-                Some(format!("'{}' is not an array. Use a valid array variable", var_name))
-            }
+            SemanticError::NonArrayIndexing { var_name, .. } => Some(format!(
+                "'{}' is not an array. Use a valid array variable",
+                var_name
+            )),
             SemanticError::InvalidConditionValue { found, .. } => {
                 Some(format!("Condition must return 1 or 0, found '{}'", found))
             }
@@ -214,7 +218,7 @@ impl ErrorReporter for SemanticError {
             SemanticError::NonArrayIndexing { line, column, .. } => (*line, *column),
             SemanticError::InvalidArraySize { line, column, .. } => (*line, *column),
             SemanticError::EmptyProgram => (0, 0),
-        } 
+        }
     }
 }
 
@@ -299,7 +303,7 @@ impl SemanticError {
             SemanticError::InvalidConditionValue { found, .. } => found.len(),
             SemanticError::NonArrayIndexing { var_name, .. } => var_name.len(),
             SemanticError::InvalidArraySize { name, .. } => name.len(),
-            SemanticError::EmptyProgram => 0, 
+            SemanticError::EmptyProgram => 0,
         }
     }
 }
