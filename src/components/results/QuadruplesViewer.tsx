@@ -28,7 +28,7 @@ export default function QuadruplesViewer({
       case "FloatLiteral":
         return (
           <span
-            className={theme === "dark" ? "text-green-300" : "text-green-700"}
+            className={theme === "dark" ? "text-[#f39c78]" : "text-[#cb502a]"}
           >
             {operand.data.value}
           </span>
@@ -36,7 +36,7 @@ export default function QuadruplesViewer({
       case "StringLiteral":
         return (
           <span
-            className={theme === "dark" ? "text-green-300" : "text-green-700"}
+            className={theme === "dark" ? "text-[#f39c78]" : "text-[#cb502a]"}
           >
             "{operand.data.value}"
           </span>
@@ -44,7 +44,7 @@ export default function QuadruplesViewer({
       case "Variable":
         return (
           <span
-            className={theme === "dark" ? "text-blue-300" : "text-blue-700"}
+            className={theme === "dark" ? "text-[#e86f42]" : "text-[#e05d30]"}
           >
             {operand.data.name}
           </span>
@@ -52,7 +52,7 @@ export default function QuadruplesViewer({
       case "TempVariable":
         return (
           <span
-            className={theme === "dark" ? "text-cyan-300" : "text-cyan-700"}
+            className={theme === "dark" ? "text-[#fb8f67]" : "text-[#a84424]"}
           >
             {operand.data.name}
           </span>
@@ -60,16 +60,24 @@ export default function QuadruplesViewer({
       case "ArrayElement":
         return (
           <span
-            className={theme === "dark" ? "text-purple-300" : "text-purple-700"}
+            className={theme === "dark" ? "text-[#ffb86c]" : "text-[#ed7d39]"}
           >
             {operand.data.name}[{renderOperand(operand.data.index)}]
           </span>
         );
       case "Empty":
-        return <span className="text-gray-500">_</span>;
+        return (
+          <span
+            className={theme === "dark" ? "text-[#b5a9a2]" : "text-[#868e96]"}
+          >
+            _
+          </span>
+        );
       default:
         return (
-          <span className={theme === "dark" ? "text-red-300" : "text-red-700"}>
+          <span
+            className={theme === "dark" ? "text-[#fa5252]" : "text-[#e03131]"}
+          >
             Unknown
           </span>
         );
@@ -82,8 +90,8 @@ export default function QuadruplesViewer({
         <div
           className={
             theme === "dark"
-              ? "font-bold text-orange-300"
-              : "font-bold text-orange-700"
+              ? "font-bold text-[#f39c78]"
+              : "font-bold text-[#cb502a]"
           }
         >
           Label {(quad.operation as any).data.id}:
@@ -97,8 +105,8 @@ export default function QuadruplesViewer({
           <span
             className={
               theme === "dark"
-                ? "font-bold text-orange-300"
-                : "font-bold text-orange-700"
+                ? "font-bold text-[#f39c78]"
+                : "font-bold text-[#cb502a]"
             }
           >
             GOTO
@@ -116,8 +124,8 @@ export default function QuadruplesViewer({
           <span
             className={
               theme === "dark"
-                ? "font-bold text-orange-300"
-                : "font-bold text-orange-700"
+                ? "font-bold text-[#f39c78]"
+                : "font-bold text-[#cb502a]"
             }
           >
             GOTO
@@ -135,8 +143,8 @@ export default function QuadruplesViewer({
           <span
             className={
               theme === "dark"
-                ? "font-bold text-orange-300"
-                : "font-bold text-orange-700"
+                ? "font-bold text-[#f39c78]"
+                : "font-bold text-[#cb502a]"
             }
           >
             GOTO
@@ -152,8 +160,8 @@ export default function QuadruplesViewer({
           <span
             className={
               theme === "dark"
-                ? "font-bold text-cyan-300"
-                : "font-bold text-cyan-700"
+                ? "font-bold text-[#fb8f67]"
+                : "font-bold text-[#a84424]"
             }
           >
             INPUT
@@ -169,8 +177,8 @@ export default function QuadruplesViewer({
           <span
             className={
               theme === "dark"
-                ? "font-bold text-cyan-300"
-                : "font-bold text-cyan-700"
+                ? "font-bold text-[#fb8f67]"
+                : "font-bold text-[#a84424]"
             }
           >
             OUTPUT
@@ -205,8 +213,8 @@ export default function QuadruplesViewer({
           <span
             className={
               theme === "dark"
-                ? "font-bold px-1 text-red-300"
-                : "font-bold px-1 text-red-700"
+                ? "font-bold px-1 text-[#fa5252]"
+                : "font-bold px-1 text-[#e03131]"
             }
           >
             {opSymbols[quad.operation.type]}
@@ -224,8 +232,8 @@ export default function QuadruplesViewer({
           <span
             className={
               theme === "dark"
-                ? "font-bold px-1 text-red-300"
-                : "font-bold px-1 text-red-700"
+                ? "font-bold px-1 text-[#fa5252]"
+                : "font-bold px-1 text-[#e03131]"
             }
           >
             !
@@ -257,8 +265,8 @@ export default function QuadruplesViewer({
         <span
           className={
             theme === "dark"
-              ? "font-bold text-red-300"
-              : "font-bold text-red-700"
+              ? "font-bold text-[#fa5252]"
+              : "font-bold text-[#e03131]"
           }
         >
           {quad.operation.type}
@@ -275,12 +283,12 @@ export default function QuadruplesViewer({
     <div className="animate-fadeIn">
       <div className="mb-4 flex justify-between items-center">
         <div
-          className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+          className={`text-sm ${theme === "dark" ? "text-[#d9cec9]" : "text-[#495057]"}`}
         >
           <span className="font-semibold mr-4">
             Next temporary:{" "}
             <span
-              className={theme === "dark" ? "text-cyan-300" : "text-cyan-700"}
+              className={theme === "dark" ? "text-[#fb8f67]" : "text-[#a84424]"}
             >
               t{next_temp}
             </span>
@@ -288,16 +296,14 @@ export default function QuadruplesViewer({
           <span className="font-semibold">
             Next label:{" "}
             <span
-              className={
-                theme === "dark" ? "text-orange-300" : "text-orange-700"
-              }
+              className={theme === "dark" ? "text-[#f39c78]" : "text-[#cb502a]"}
             >
               L{next_label}
             </span>
           </span>
         </div>
         <div
-          className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}
+          className={`text-sm ${theme === "dark" ? "text-[#b5a9a2]" : "text-[#868e96]"}`}
         >
           {filteredQuadruples.length}{" "}
           {filteredQuadruples.length === 1 ? "quadruple" : "quadruples"}
@@ -307,8 +313,8 @@ export default function QuadruplesViewer({
       <div
         className={`p-4 rounded-lg overflow-auto font-mono text-sm shadow-sm border ${
           theme === "dark"
-            ? "bg-gray-900 text-gray-300 border-gray-700"
-            : "bg-gray-50 text-gray-800 border-gray-200"
+            ? "bg-[#262220] text-[#f3ebe7] border-[#3e3632]"
+            : "bg-white text-[#212529] border-[#efe0d9]"
         }`}
         style={{ maxHeight: "calc(100vh - 250px)" }}
       >
@@ -317,7 +323,7 @@ export default function QuadruplesViewer({
             <div
               key={index}
               className={`group ${
-                theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-200"
+                theme === "dark" ? "hover:bg-[#312c28]" : "hover:bg-[#fff1ec]"
               } transition-colors px-3 py-2 rounded cursor-pointer`}
               onClick={() =>
                 setExpandedIndex(expandedIndex === index ? null : index)
@@ -325,7 +331,7 @@ export default function QuadruplesViewer({
             >
               <div className="flex items-center">
                 <div
-                  className={`w-10 text-right ${theme === "dark" ? "text-gray-500" : "text-gray-400"} mr-4`}
+                  className={`w-10 text-right ${theme === "dark" ? "text-[#b5a9a2]" : "text-[#868e96]"} mr-4`}
                 >
                   {index}:
                 </div>
@@ -340,8 +346,8 @@ export default function QuadruplesViewer({
                           <div
                             className={
                               theme === "dark"
-                                ? "text-orange-300"
-                                : "text-orange-700"
+                                ? "text-[#f39c78]"
+                                : "text-[#cb502a]"
                             }
                           >
                             {(quad.operation as any).data.id}
@@ -356,8 +362,8 @@ export default function QuadruplesViewer({
                           <div
                             className={
                               theme === "dark"
-                                ? "text-orange-300"
-                                : "text-orange-700"
+                                ? "text-[#f39c78]"
+                                : "text-[#cb502a]"
                             }
                           >
                             Label {(quad.operation as any).data.target}
@@ -379,7 +385,7 @@ export default function QuadruplesViewer({
                   <div className="w-full">{renderCompactQuadruple(quad)}</div>
                 )}
                 <div
-                  className={`${expandedIndex === index ? "transform rotate-180" : ""} transition-transform ml-2 text-gray-500`}
+                  className={`${expandedIndex === index ? "transform rotate-180" : ""} transition-transform ml-2 ${theme === "dark" ? "text-[#b5a9a2]" : "text-[#868e96]"}`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -396,7 +402,9 @@ export default function QuadruplesViewer({
           ))}
 
           {filteredQuadruples.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
+            <div
+              className={`text-center py-8 ${theme === "dark" ? "text-[#b5a9a2]" : "text-[#868e96]"}`}
+            >
               No quadruples found{searchTerm ? " matching your search" : ""}
             </div>
           )}

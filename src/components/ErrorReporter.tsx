@@ -4,15 +4,15 @@ import {
   LexicalError,
   SyntaxError,
 } from "@/types";
-import { 
-  X, 
-  AlertCircle, 
-  Copy, 
-  ChevronDown, 
-  ChevronUp, 
+import {
+  X,
+  AlertCircle,
+  Copy,
+  ChevronDown,
+  ChevronUp,
   AlertTriangle,
   Info,
-  Lightbulb
+  Lightbulb,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -42,24 +42,33 @@ export default function ErrorReporter({
         type: "Lexical",
         errors: errors?.lexical_errors || [],
         color: "red",
-        icon: <AlertTriangle size={16} className="text-red-500" />,
-        bgColor: theme === "dark" ? "bg-red-950" : "bg-red-50"
+        icon: <AlertTriangle size={16} className="text-[var(--error-color)]" />,
+        bgColor:
+          theme === "dark"
+            ? "bg-[color:var(--bg-tertiary)]"
+            : "bg-[color:var(--bg-tertiary)]",
       };
     } else if (syntaxCount > 0) {
       return {
         type: "Syntax",
         errors: errors?.syntax_errors || [],
         color: "red",
-        icon: <AlertCircle size={16} className="text-red-500" />,
-        bgColor: theme === "dark" ? "bg-red-950" : "bg-red-50"
+        icon: <AlertCircle size={16} className="text-[var(--error-color)]" />,
+        bgColor:
+          theme === "dark"
+            ? "bg-[color:var(--bg-tertiary)]"
+            : "bg-[color:var(--bg-tertiary)]",
       };
     } else {
       return {
         type: "Semantic",
         errors: errors?.semantic_errors || [],
-        color: "purple",
-        icon: <Info size={16} className="text-purple-500" />,
-        bgColor: theme === "dark" ? "bg-purple-950" : "bg-purple-50"
+        color: "orange", // Changed from purple to orange
+        icon: <Info size={16} className="text-[var(--info-color)]" />,
+        bgColor:
+          theme === "dark"
+            ? "bg-[color:var(--bg-tertiary)]"
+            : "bg-[color:var(--bg-tertiary)]",
       };
     }
   };
@@ -68,55 +77,69 @@ export default function ErrorReporter({
   const [expandedError, setExpandedError] = useState<number | null>(0); // Default to first error expanded
 
   // Get code context for the given line and column
-  const getCodeContext = (line: number, column: number, contextLines: number = 1) => {
+  const getCodeContext = (
+    line: number,
+    column: number,
+    contextLines: number = 1,
+  ) => {
     if (!sourceCode || line <= 0) return { lines: [], errorLineIndex: -1 };
-    
+
     // Split into lines and adjust for 1-based indexing
-    const allLines = sourceCode.split('\n');
+    const allLines = sourceCode.split("\n");
     const targetLineIndex = line - 1;
-    
+
     // No line exists at this index
     if (targetLineIndex >= allLines.length) {
       return { lines: [], errorLineIndex: -1 };
     }
-    
+
     // Calculate start and end lines with context
     const startLine = Math.max(0, targetLineIndex - contextLines);
-    const endLine = Math.min(allLines.length - 1, targetLineIndex + contextLines);
-    
+    const endLine = Math.min(
+      allLines.length - 1,
+      targetLineIndex + contextLines,
+    );
+
     // Extract the relevant lines
     const lines = allLines.slice(startLine, endLine + 1).map((text, i) => ({
       number: startLine + i + 1,
       text: text,
       isErrorLine: startLine + i === targetLineIndex,
-      column: startLine + i === targetLineIndex ? column : -1
+      column: startLine + i === targetLineIndex ? column : -1,
     }));
-    
+
     return {
       lines,
-      errorLineIndex: targetLineIndex - startLine
+      errorLineIndex: targetLineIndex - startLine,
     };
   };
 
   // Function to render an error message in terminal style
-  const renderTerminalError = (error: any, index: number, errorType: string) => {
+  const renderTerminalError = (
+    error: any,
+    index: number,
+    errorType: string,
+  ) => {
     // Generate error details based on type
     let errorDetails = {
       title: "",
       message: "",
       line: 0,
       column: 0,
-      suggestion: ""
+      suggestion: "",
     };
 
     if (errorType === "Lexical") {
       const lexError = error as LexicalError;
       errorDetails = {
         title: lexError.error_type.type,
-        message: lexError.message || `Invalid token '${lexError.invalid_token}'`,
+        message:
+          lexError.message || `Invalid token '${lexError.invalid_token}'`,
         line: lexError.position.line,
         column: lexError.position.column,
-        suggestion: lexError.suggestion || "Check for unrecognized symbols or incorrect syntax"
+        suggestion:
+          lexError.suggestion ||
+          "Check for unrecognized symbols or incorrect syntax",
       };
     } else if (errorType === "Syntax") {
       const syntaxError = error as SyntaxError;
@@ -127,7 +150,8 @@ export default function ErrorReporter({
             message: syntaxError.data.message,
             line: syntaxError.data.line,
             column: syntaxError.data.column,
-            suggestion: "Check that all tokens are valid in the current context"
+            suggestion:
+              "Check that all tokens are valid in the current context",
           };
           break;
         case "UnexpectedToken":
@@ -136,7 +160,7 @@ export default function ErrorReporter({
             message: `Found "${syntaxError.data.token}" but expected one of: ${syntaxError.data.expected.join(", ")}`,
             line: syntaxError.data.line,
             column: syntaxError.data.column,
-            suggestion: "Make sure the syntax follows the language grammar"
+            suggestion: "Make sure the syntax follows the language grammar",
           };
           break;
         case "UnexpectedEOF":
@@ -145,7 +169,7 @@ export default function ErrorReporter({
             message: `Expected one of: ${syntaxError.data.expected.join(", ")}`,
             line: syntaxError.data.line,
             column: syntaxError.data.column,
-            suggestion: "The file ends abruptly. Complete your code structure."
+            suggestion: "The file ends abruptly. Complete your code structure.",
           };
           break;
         case "ExtraToken":
@@ -154,16 +178,19 @@ export default function ErrorReporter({
             message: `Unexpected token "${syntaxError.data.token}"`,
             line: syntaxError.data.line,
             column: syntaxError.data.column,
-            suggestion: `Remove the extra token "${syntaxError.data.token}"`
+            suggestion: `Remove the extra token "${syntaxError.data.token}"`,
           };
           break;
         default:
           errorDetails = {
             title: "Syntax Error",
-            message: typeof syntaxError.data === "string" ? syntaxError.data : "Unknown syntax error",
+            message:
+              typeof syntaxError.data === "string"
+                ? syntaxError.data
+                : "Unknown syntax error",
             line: 0,
             column: 0,
-            suggestion: "Check your syntax"
+            suggestion: "Check your syntax",
           };
       }
     } else {
@@ -176,7 +203,7 @@ export default function ErrorReporter({
             message: "Program is empty or has no meaningful code",
             line: 0,
             column: 0,
-            suggestion: "Add some code to your program"
+            suggestion: "Add some code to your program",
           };
           break;
         case "UndeclaredIdentifier":
@@ -185,7 +212,7 @@ export default function ErrorReporter({
             message: `Variable "${semanticError.data.name}" is not declared`,
             line: semanticError.data.position.line,
             column: semanticError.data.position.column,
-            suggestion: `Declare the variable "${semanticError.data.name}" before using it`
+            suggestion: `Declare the variable "${semanticError.data.name}" before using it`,
           };
           break;
         case "DuplicateDeclaration":
@@ -194,18 +221,20 @@ export default function ErrorReporter({
             message: `"${semanticError.data.name}" is already declared at line ${semanticError.data.original_position.line}, column ${semanticError.data.original_position.column}`,
             line: semanticError.data.position.line,
             column: semanticError.data.position.column,
-            suggestion: `Use a different name for this variable, or remove this duplicate declaration`
+            suggestion: `Use a different name for this variable, or remove this duplicate declaration`,
           };
           break;
         case "TypeMismatch":
           errorDetails = {
             title: "Type Mismatch",
             message: `Expected ${semanticError.data.expected} but found ${semanticError.data.found}${
-              semanticError.data.context ? " in " + semanticError.data.context : ""
+              semanticError.data.context
+                ? " in " + semanticError.data.context
+                : ""
             }`,
             line: semanticError.data.position.line,
             column: semanticError.data.position.column,
-            suggestion: `Make sure the types match. Try converting from '${semanticError.data.found}' to '${semanticError.data.expected}'`
+            suggestion: `Make sure the types match. Try converting from '${semanticError.data.found}' to '${semanticError.data.expected}'`,
           };
           break;
         case "ArraySizeMismatch":
@@ -214,7 +243,7 @@ export default function ErrorReporter({
             message: `Array "${semanticError.data.name}" has size ${semanticError.data.expected} but was initialized with ${semanticError.data.actual} elements`,
             line: semanticError.data.position.line,
             column: semanticError.data.position.column,
-            suggestion: `Adjust the number of elements to match the array size`
+            suggestion: `Adjust the number of elements to match the array size`,
           };
           break;
         case "ConstantModification":
@@ -223,7 +252,7 @@ export default function ErrorReporter({
             message: `Cannot modify constant "${semanticError.data.name}"`,
             line: semanticError.data.position.line,
             column: semanticError.data.position.column,
-            suggestion: `Constants cannot be modified after declaration. Use a variable instead.`
+            suggestion: `Constants cannot be modified after declaration. Use a variable instead.`,
           };
           break;
         case "ArrayIndexOutOfBounds":
@@ -232,7 +261,7 @@ export default function ErrorReporter({
             message: `Index ${semanticError.data.index} is out of bounds for array "${semanticError.data.name}" of size ${semanticError.data.size}`,
             line: semanticError.data.position.line,
             column: semanticError.data.position.column,
-            suggestion: `Use indices from 0 to ${semanticError.data.size - 1}`
+            suggestion: `Use indices from 0 to ${semanticError.data.size - 1}`,
           };
           break;
         default:
@@ -242,7 +271,7 @@ export default function ErrorReporter({
               message: `Error in ${semanticError.type}`,
               line: semanticError.data.position.line,
               column: semanticError.data.position.column,
-              suggestion: "Check your code for logical errors"
+              suggestion: "Check your code for logical errors",
             };
           } else {
             errorDetails = {
@@ -250,33 +279,39 @@ export default function ErrorReporter({
               message: `Error in ${semanticError.type}`,
               line: 0,
               column: 0,
-              suggestion: "Check your code for logical errors"
+              suggestion: "Check your code for logical errors",
             };
           }
       }
     }
 
     // Get code context with 2 lines of context (before and after)
-    const codeContext = getCodeContext(errorDetails.line, errorDetails.column, 2);
+    const codeContext = getCodeContext(
+      errorDetails.line,
+      errorDetails.column,
+      2,
+    );
     const isExpanded = expandedError === index;
 
     // Error type color classes
-    const errorColor = errorType === "Semantic" ? "purple" : "red"; 
+    const errorColor = errorType === "Semantic" ? "purple" : "red";
 
     return (
-      <div 
+      <div
         key={index}
         className={`my-4 rounded-md border ${
-          theme === "dark" 
-            ? `border-${errorColor}-800 ${errorInfo.bgColor}` 
-            : `border-${errorColor}-200 ${errorInfo.bgColor}`
+          theme === "dark"
+            ? `border-[var(--border-color)] ${errorInfo.bgColor}`
+            : `border-[var(--border-color)] ${errorInfo.bgColor}`
         } ${isExpanded ? "" : "cursor-pointer hover:bg-opacity-80"}`}
         onClick={() => !isExpanded && setExpandedError(index)}
       >
         <div className="p-3">
           {/* Error Header */}
           <div className="flex items-start gap-2">
-            <div className={`font-mono text-${errorColor}-500 font-bold mt-0.5`}>
+            <div
+              className={`font-mono text-${errorColor}-500 font-bold mt-0.5`}
+            >
               {errorInfo.icon}
             </div>
             <div className="font-mono w-full">
@@ -301,17 +336,27 @@ export default function ErrorReporter({
                 </button>
               </div>
 
-              {/* Error Description - now with lighter red */}
-              <div className={`bg-${errorColor}-${theme === "dark" ? "900/30" : "100"} px-3 py-2 mt-2 rounded-md text-${errorColor}-${theme === "dark" ? "300" : "700"}`}>
+              {/* Error Description */}
+              <div
+                className={`bg-[color:var(--bg-tertiary)] bg-opacity-${theme === "dark" ? "30" : "60"} px-3 py-2 mt-2 rounded-md text-${
+                  errorColor === "red"
+                    ? "[var(--error-color)]"
+                    : "[var(--info-color)]"
+                }`}
+              >
                 {errorDetails.message}
               </div>
-              
+
               {/* Location info */}
-              <div className={`mt-2 text-${theme === "dark" ? "gray-400" : "gray-600"} text-sm`}>
+              <div
+                className={`mt-2 text-${theme === "dark" ? "gray-400" : "gray-600"} text-sm`}
+              >
                 {errorDetails.line > 0 && errorDetails.column > 0 && (
                   <div className="flex items-center">
                     <span className="font-mono">--&gt;</span>
-                    <span className="ml-2">line {errorDetails.line}, column {errorDetails.column}</span>
+                    <span className="ml-2">
+                      line {errorDetails.line}, column {errorDetails.column}
+                    </span>
                   </div>
                 )}
               </div>
@@ -319,54 +364,60 @@ export default function ErrorReporter({
           </div>
 
           {/* Code snippet section */}
-          <div className={`mt-3 p-2 rounded-md font-mono ${
-            theme === "dark" ? "bg-gray-900" : "bg-gray-100"
-          } border ${
-            theme === "dark" ? "border-gray-800" : "border-gray-300"
-          }`}>
+          <div
+            className={`mt-3 p-2 rounded-md font-mono ${
+              theme === "dark" ? "bg-gray-900" : "bg-gray-100"
+            } border ${
+              theme === "dark" ? "border-gray-800" : "border-gray-300"
+            }`}
+          >
             {errorDetails.line > 0 && codeContext.lines.length > 0 ? (
               <div className="text-sm">
                 {codeContext.lines.map((line, i) => (
                   <div key={i} className="flex">
                     {/* Line number */}
-                    <div 
+                    <div
                       className={`select-none mr-4 text-right w-8 ${
                         line.isErrorLine
-                          ? `text-${errorColor}-500 font-bold`
-                          : theme === "dark" ? "text-gray-500" : "text-gray-400"
+                          ? `text-[var(--${errorColor === "red" ? "error" : "info"}-color)] font-bold`
+                          : theme === "dark"
+                            ? "text-[var(--text-tertiary)]"
+                            : "text-[var(--text-tertiary)]"
                       }`}
                     >
                       {line.number}
                     </div>
-                    
+
                     {/* Line content */}
                     <div className="flex-1 overflow-x-auto">
-                      <div className="whitespace-pre">
-                        {line.text}
-                      </div>
-                      
+                      <div className="whitespace-pre">{line.text}</div>
+
                       {/* Error position indicator - more elegant and precise */}
                       {line.isErrorLine && (
                         <div className="relative">
                           {/* Precise arrow pointing to the error */}
-                          <div className={`whitespace-pre text-${errorColor}-500`}>
+                          <div
+                            className={`whitespace-pre text-[var(--${errorColor === "red" ? "error" : "info"}-color)]`}
+                          >
                             {" ".repeat(Math.max(0, line.column - 1))}
                             <span className="font-bold">
-                              {errorType === "Lexical" 
-                                ? "^".repeat(Math.min(
-                                    (error as LexicalError).invalid_token.length || 1, 
-                                    line.text.length - line.column + 1
-                                  ))
+                              {errorType === "Lexical"
+                                ? "^".repeat(
+                                    Math.min(
+                                      (error as LexicalError).invalid_token
+                                        .length || 1,
+                                      line.text.length - line.column + 1,
+                                    ),
+                                  )
                                 : "^"}
                             </span>
                           </div>
-                          
+
                           {/* Error message under the arrow - more compact */}
-                          <div 
-                            className={`absolute left-0 whitespace-pre mt-px text-xs text-${errorColor}-${theme === "dark" ? "400" : "600"}`}
-                            style={{
-                            }}>
-                          </div>
+                          <div
+                            className={`absolute left-0 whitespace-pre mt-px text-xs text-[var(--${errorColor === "red" ? "error" : "info"}-color)]`}
+                            style={{}}
+                          ></div>
                         </div>
                       )}
                     </div>
@@ -374,22 +425,34 @@ export default function ErrorReporter({
                 ))}
               </div>
             ) : (
-              <div className="italic text-gray-500">
-                {errorType === "Semantic" && errorDetails.title === "Empty Program" 
-                  ? "<empty file>" 
+              <div
+                className={`italic ${theme === "dark" ? "text-[#b5a9a2]" : "text-[#868e96]"}`}
+              >
+                {errorType === "Semantic" &&
+                errorDetails.title === "Empty Program"
+                  ? "<empty file>"
                   : "Unable to display code context"}
               </div>
             )}
           </div>
 
-          {/* Suggestion in blue */}
+          {/* Suggestion */}
           {isExpanded && (
-            <div className={`mt-3 p-3 rounded-md flex items-start gap-2 ${
-              theme === "dark" 
-                ? "bg-blue-900/20 text-blue-300 border border-blue-800" 
-                : "bg-blue-50 text-blue-700 border border-blue-200"
-            }`}>
-              <Lightbulb size={18} className={theme === "dark" ? "text-blue-400" : "text-blue-600"} />
+            <div
+              className={`mt-3 p-3 rounded-md flex items-start gap-2 ${
+                theme === "dark"
+                  ? "bg-[color:var(--bg-tertiary)] bg-opacity-20 text-[var(--accent-color)] border border-[var(--border-color)]"
+                  : "bg-[color:var(--bg-tertiary)] text-[var(--accent-color)] border border-[var(--border-color)]"
+              }`}
+            >
+              <Lightbulb
+                size={18}
+                className={
+                  theme === "dark"
+                    ? "text-[var(--accent-color)]"
+                    : "text-[var(--accent-color)]"
+                }
+              />
               <div>
                 <span className="font-medium">Suggestion: </span>
                 {errorDetails.suggestion}
@@ -406,16 +469,23 @@ export default function ErrorReporter({
       <div
         className={`rounded-lg shadow-xl max-w-3xl w-full my-8 transform transition-all duration-300 ${
           theme === "dark"
-            ? "bg-gray-800 text-gray-100"
-            : "bg-white text-gray-900"
+            ? "bg-[#262220] text-[#f3ebe7]"
+            : "bg-white text-[#212529]"
         }`}
       >
-        <div className="flex justify-between items-center p-4 border-b border-gray-700">
+        <div
+          className={`flex justify-between items-center p-4 border-b ${theme === "dark" ? "border-[#3e3632]" : "border-[#efe0d9]"}`}
+        >
           <h3 className="text-xl font-bold flex items-center gap-2">
-            <AlertCircle className={`text-${errorInfo.color}-500`} size={24} />
-            <span>
-              {errorInfo.type} Errors Detected
-            </span>
+            <AlertCircle
+              className={
+                theme === "dark"
+                  ? "text-[var(--error-color)]"
+                  : "text-[var(--error-color)]"
+              }
+              size={24}
+            />
+            <span>{errorInfo.type} Errors Detected</span>
           </h3>
           <button
             onClick={onDismiss}
@@ -429,14 +499,22 @@ export default function ErrorReporter({
         </div>
 
         {/* Error Count Banner */}
-        <div className={`px-4 py-2 ${
-          errorInfo.color === "red" 
-            ? theme === "dark" ? "bg-red-900/30" : "bg-red-100"
-            : theme === "dark" ? "bg-purple-900/30" : "bg-purple-100"
-        }`}>
+        <div
+          className={`px-4 py-2 ${
+            errorInfo.color === "red"
+              ? theme === "dark"
+                ? "bg-red-900/30"
+                : "bg-red-100"
+              : theme === "dark"
+                ? "bg-purple-900/30"
+                : "bg-purple-100"
+          }`}
+        >
           <div className="font-mono font-bold flex items-center">
-            <span className={`text-${errorInfo.color}-${theme === "dark" ? "400" : "600"}`}>
-              Error: {totalErrors} error{totalErrors !== 1 ? 's' : ''} found
+            <span
+              className={`text-${errorInfo.color}-${theme === "dark" ? "400" : "600"}`}
+            >
+              Error: {totalErrors} error{totalErrors !== 1 ? "s" : ""} found
             </span>
           </div>
         </div>
@@ -462,9 +540,9 @@ export default function ErrorReporter({
             </div>
           ) : (
             <div className="space-y-4">
-              {errorInfo.errors.map((error, index) => (
-                renderTerminalError(error, index, errorInfo.type)
-              ))}
+              {errorInfo.errors.map((error, index) =>
+                renderTerminalError(error, index, errorInfo.type),
+              )}
             </div>
           )}
         </div>
@@ -473,38 +551,47 @@ export default function ErrorReporter({
           <button
             onClick={() => {
               // Copy all errors to clipboard in a useful format
-              const errorText = errorInfo.errors.map((error, index) => {
-                let errorMessage = "";
-                const errorType = errorInfo.type;
-                
-                if (errorType === "Lexical") {
-                  const lexError = error as LexicalError;
-                  errorMessage = `${errorType} Error: ${lexError.error_type.type} - Invalid token '${lexError.invalid_token}' at line ${lexError.position.line}, column ${lexError.position.column}`;
-                } else if (errorType === "Syntax") {
-                  const syntaxError = error as SyntaxError;
-                  if (syntaxError.type === "UnexpectedToken") {
-                    errorMessage = `${errorType} Error: ${syntaxError.type} - Found "${syntaxError.data.token}" but expected one of: ${syntaxError.data.expected.join(", ")} at line ${syntaxError.data.line}, column ${syntaxError.data.column}`;
-                  } else {
-                    if (typeof syntaxError.data === 'object' && syntaxError.data !== null && 'line' in syntaxError.data && 'column' in syntaxError.data) {
-                      errorMessage = `${errorType} Error: ${syntaxError.type} at line ${syntaxError.data.line}, column ${syntaxError.data.column}`;
+              const errorText = errorInfo.errors
+                .map((error, index) => {
+                  let errorMessage = "";
+                  const errorType = errorInfo.type;
+
+                  if (errorType === "Lexical") {
+                    const lexError = error as LexicalError;
+                    errorMessage = `${errorType} Error: ${lexError.error_type.type} - Invalid token '${lexError.invalid_token}' at line ${lexError.position.line}, column ${lexError.position.column}`;
+                  } else if (errorType === "Syntax") {
+                    const syntaxError = error as SyntaxError;
+                    if (syntaxError.type === "UnexpectedToken") {
+                      errorMessage = `${errorType} Error: ${syntaxError.type} - Found "${syntaxError.data.token}" but expected one of: ${syntaxError.data.expected.join(", ")} at line ${syntaxError.data.line}, column ${syntaxError.data.column}`;
                     } else {
-                      errorMessage = `${errorType} Error: ${syntaxError.type} - ${typeof syntaxError.data === 'string' ? syntaxError.data : 'Unknown error'}`;
+                      if (
+                        typeof syntaxError.data === "object" &&
+                        syntaxError.data !== null &&
+                        "line" in syntaxError.data &&
+                        "column" in syntaxError.data
+                      ) {
+                        errorMessage = `${errorType} Error: ${syntaxError.type} at line ${syntaxError.data.line}, column ${syntaxError.data.column}`;
+                      } else {
+                        errorMessage = `${errorType} Error: ${syntaxError.type} - ${typeof syntaxError.data === "string" ? syntaxError.data : "Unknown error"}`;
+                      }
                     }
+                  } else {
+                    const semanticError = error as SemanticError;
+                    let position = "";
+                    if (
+                      semanticError.type !== "EmptyProgram" &&
+                      "data" in semanticError &&
+                      semanticError.data?.position
+                    ) {
+                      position = ` at line ${semanticError.data.position.line}, column ${semanticError.data.position.column}`;
+                    }
+                    errorMessage = `${errorType} Error: ${semanticError.type}${position}`;
                   }
-                } else {
-                  const semanticError = error as SemanticError;
-                  let position = "";
-                  if (semanticError.type !== "EmptyProgram" && 
-                      "data" in semanticError && 
-                      semanticError.data?.position) {
-                    position = ` at line ${semanticError.data.position.line}, column ${semanticError.data.position.column}`;
-                  }
-                  errorMessage = `${errorType} Error: ${semanticError.type}${position}`;
-                }
-                
-                return `Error ${index + 1}: ${errorMessage}`;
-              }).join('\n');
-              
+
+                  return `Error ${index + 1}: ${errorMessage}`;
+                })
+                .join("\n");
+
               navigator.clipboard.writeText(errorText);
             }}
             className={`px-4 py-2 rounded-md transition-colors mr-2 flex items-center gap-2 ${
@@ -516,7 +603,7 @@ export default function ErrorReporter({
             <Copy size={16} />
             <span>Copy All</span>
           </button>
-          
+
           <button
             onClick={onDismiss}
             className={`px-4 py-2 rounded-md transition-colors ${

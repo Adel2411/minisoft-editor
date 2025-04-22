@@ -1,10 +1,4 @@
 @import "tailwindcss";
-@tailwind utilities;
-
-@theme {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
 :root {
   --background: #ffffff;
@@ -26,36 +20,36 @@ body {
 
 /* Theme variables */
 :root {
-  --bg-primary: #f8f9fa;
+  --bg-primary: #fefaf8;
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f1f3f5;
+  --bg-tertiary: #fff1ec;
   --text-primary: #212529;
   --text-secondary: #495057;
   --text-tertiary: #868e96;
-  --border-color: #dee2e6;
-  --accent-color: #10b981;
-  --accent-hover: #059669;
+  --border-color: #efe0d9;
+  --accent-color: #e05d30;
+  --accent-hover: #cb502a;
   --error-color: #e03131;
-  --success-color: #2b8a3e;
-  --warning-color: #f59f00;
-  --info-color: #1971c2;
+  --success-color: #f39c78;
+  --warning-color: #ed7d39;
+  --info-color: #a84424;
 }
 
 /* Dark theme */
 .dark-theme {
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --bg-tertiary: #2d2d2d;
-  --text-primary: #e9ecef;
-  --text-secondary: #ced4da;
-  --text-tertiary: #adb5bd;
-  --border-color: #4b4b4b;
-  --accent-color: #10b981;
-  --accent-hover: #059669;
+  --bg-primary: #1e1a17;
+  --bg-secondary: #262220;
+  --bg-tertiary: #312c28;
+  --text-primary: #f3ebe7;
+  --text-secondary: #d9cec9;
+  --text-tertiary: #b5a9a2;
+  --border-color: #3e3632;
+  --accent-color: #e86f42;
+  --accent-hover: #f39c78;
   --error-color: #fa5252;
-  --success-color: #40c057;
-  --warning-color: #fab005;
-  --info-color: #339af0;
+  --success-color: #f39c78;
+  --warning-color: #ffb86c;
+  --info-color: #fb8f67;
 }
 
 body {
@@ -89,40 +83,40 @@ body {
 }
 
 .dark-theme ::-webkit-scrollbar-track {
-  background: #1f2937;
+  background: #2a2522;
 }
 
 .dark-theme ::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: #e86f42;
   border-radius: 4px;
 }
 
 .dark-theme ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: #f39c78;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f3f4f6;
+  background: #f9efe9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #e05d30;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #cb502a;
 }
 
 /* Selection styling */
 .dark-theme ::selection {
-  background-color: rgba(16, 185, 129, 0.3);
-  color: #e5e7eb;
+  background-color: rgba(232, 111, 66, 0.3);
+  color: #f3ebe7;
 }
 
 ::selection {
-  background-color: rgba(5, 150, 105, 0.2);
-  color: #111827;
+  background-color: rgba(224, 93, 48, 0.2);
+  color: #212529;
 }
 
 /* File upload animation */
@@ -147,11 +141,11 @@ body {
 
 /* Editor specific styles */
 .editor-line-highlight {
-  background-color: rgba(16, 185, 129, 0.1);
+  background-color: rgba(224, 93, 48, 0.1);
 }
 
 .dark-theme .editor-line-highlight {
-  background-color: rgba(16, 185, 129, 0.2);
+  background-color: rgba(232, 111, 66, 0.2);
 }
 
 /* Tooltip styles */

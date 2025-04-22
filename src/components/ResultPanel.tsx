@@ -32,8 +32,8 @@ export default function ResultPanel({
         const notification = document.createElement("div");
         notification.className = `fixed bottom-4 right-4 px-4 py-2 rounded-md shadow-lg z-50 transition-opacity duration-300 ${
           theme === "dark"
-            ? "bg-gray-800 text-gray-200 border border-gray-700"
-            : "bg-white text-gray-800 border border-gray-200"
+            ? "bg-[#312c28] text-[#f3ebe7] border border-[#3e3632]"
+            : "bg-white text-[#212529] border border-[#efe0d9]"
         }`;
         notification.textContent = "Copied to clipboard!";
         document.body.appendChild(notification);
@@ -62,7 +62,7 @@ export default function ResultPanel({
 
   return (
     <div
-      className={`h-full overflow-auto p-4 relative ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}
+      className={`h-full overflow-auto p-4 relative ${theme === "dark" ? "bg-[#262220]" : "bg-white"}`}
     >
       {/* Result toolbar */}
       <div className="flex justify-between items-center mb-4">
@@ -77,8 +77,8 @@ export default function ResultPanel({
             onClick={() => setIsSearchOpen(!isSearchOpen)}
             className={`p-1 rounded-md transition-colors ${
               theme === "dark"
-                ? "hover:bg-gray-700 text-gray-400 hover:text-gray-200"
-                : "hover:bg-gray-200 text-gray-600 hover:text-gray-800"
+                ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
+                : "hover:bg-[#fff1ec] text-[#495057] hover:text-[#212529]"
             }`}
             title="Search in results"
           >
@@ -98,8 +98,8 @@ export default function ResultPanel({
             }}
             className={`p-1 rounded-md transition-colors ${
               theme === "dark"
-                ? "hover:bg-gray-700 text-gray-400 hover:text-gray-200"
-                : "hover:bg-gray-200 text-gray-600 hover:text-gray-800"
+                ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
+                : "hover:bg-[#fff1ec] text-[#495057] hover:text-[#212529]"
             }`}
             title="Copy to clipboard"
           >
@@ -128,8 +128,8 @@ export default function ResultPanel({
             }}
             className={`p-1 rounded-md transition-colors ${
               theme === "dark"
-                ? "hover:bg-gray-700 text-gray-400 hover:text-gray-200"
-                : "hover:bg-gray-200 text-gray-600 hover:text-gray-800"
+                ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
+                : "hover:bg-[#fff1ec] text-[#495057] hover:text-[#212529]"
             }`}
             title="Download as file"
           >
@@ -144,13 +144,13 @@ export default function ResultPanel({
           <div
             className={`flex items-center px-3 py-2 rounded-md border ${
               theme === "dark"
-                ? "bg-gray-700 border-gray-600"
-                : "bg-gray-50 border-gray-300"
+                ? "bg-[#312c28] border-[#3e3632]"
+                : "bg-[#fff1ec] border-[#efe0d9]"
             }`}
           >
             <Search
               size={16}
-              className={theme === "dark" ? "text-gray-400" : "text-gray-500"}
+              className={theme === "dark" ? "text-[#b5a9a2]" : "text-[#495057]"}
             />
             <input
               type="text"
@@ -159,8 +159,8 @@ export default function ResultPanel({
               placeholder="Search in results..."
               className={`w-full px-2 py-1 text-sm bg-transparent border-none outline-none ${
                 theme === "dark"
-                  ? "text-gray-200 placeholder-gray-400"
-                  : "text-gray-800 placeholder-gray-500"
+                  ? "text-[#f3ebe7] placeholder-[#b5a9a2]"
+                  : "text-[#212529] placeholder-[#495057]"
               }`}
             />
             {searchTerm && (
@@ -168,8 +168,8 @@ export default function ResultPanel({
                 onClick={() => setSearchTerm("")}
                 className={`text-sm ${
                   theme === "dark"
-                    ? "text-gray-400 hover:text-gray-200"
-                    : "text-gray-600 hover:text-gray-800"
+                    ? "text-[#b5a9a2] hover:text-[#f3ebe7]"
+                    : "text-[#495057] hover:text-[#212529]"
                 }`}
               >
                 Clear

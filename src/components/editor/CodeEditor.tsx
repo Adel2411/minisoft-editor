@@ -242,13 +242,13 @@ export default function Editor({
       ref={editorRef}
       className={`relative h-full min-h-[400px] font-mono text-sm border rounded-md overflow-hidden transition-colors duration-200 ${
         theme === "dark"
-          ? "bg-gray-800 border-gray-700"
-          : "bg-white border-gray-200"
+          ? "bg-[#262220] border-[#3e3632]"
+          : "bg-white border-[#efe0d9]"
       } ${
         isFocused && theme === "dark"
-          ? "border-emerald-500/50"
+          ? "border-[#e86f42]/50"
           : isFocused
-            ? "border-emerald-600/50"
+            ? "border-[#e05d30]/50"
             : ""
       }`}
     >
@@ -256,8 +256,8 @@ export default function Editor({
       <div
         className={`flex items-center justify-between px-3 py-2 border-b ${
           theme === "dark"
-            ? "bg-gray-900 border-gray-700"
-            : "bg-gray-100 border-gray-200"
+            ? "bg-[#1e1a17] border-[#3e3632]"
+            : "bg-[#fff1ec] border-[#efe0d9]"
         }`}
       >
         <div className="flex items-center gap-2">
@@ -265,8 +265,8 @@ export default function Editor({
             onClick={() => setIsSearchOpen(!isSearchOpen)}
             className={`p-1 rounded-md transition-colors ${
               theme === "dark"
-                ? "hover:bg-gray-700 text-gray-400 hover:text-gray-200"
-                : "hover:bg-gray-200 text-gray-600 hover:text-gray-800"
+                ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
+                : "hover:bg-[#efe0d9] text-[#495057] hover:text-[#212529]"
             }`}
             title="Search (Ctrl+F)"
           >
@@ -284,8 +284,8 @@ export default function Editor({
             }}
             className={`p-1 rounded-md transition-colors ${
               theme === "dark"
-                ? "hover:bg-gray-700 text-gray-400 hover:text-gray-200"
-                : "hover:bg-gray-200 text-gray-600 hover:text-gray-800"
+                ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
+                : "hover:bg-[#efe0d9] text-[#495057] hover:text-[#212529]"
             }`}
             title="Save (Ctrl+S)"
           >
@@ -295,8 +295,8 @@ export default function Editor({
             onClick={onCompile}
             className={`p-1 rounded-md transition-colors ${
               theme === "dark"
-                ? "hover:bg-gray-700 text-gray-400 hover:text-gray-200"
-                : "hover:bg-gray-200 text-gray-600 hover:text-gray-800"
+                ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
+                : "hover:bg-[#efe0d9] text-[#495057] hover:text-[#212529]"
             }`}
             title="Run (Ctrl+Enter)"
           >
@@ -307,8 +307,8 @@ export default function Editor({
           <button
             className={`p-1 rounded-md transition-colors ${
               theme === "dark"
-                ? "hover:bg-gray-700 text-gray-400 hover:text-gray-200"
-                : "hover:bg-gray-200 text-gray-600 hover:text-gray-800"
+                ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
+                : "hover:bg-[#efe0d9] text-[#495057] hover:text-[#212529]"
             }`}
             title="Settings"
           >
@@ -400,8 +400,8 @@ export default function Editor({
           ref={lineNumbersRef}
           className={`sticky left-0 w-12 select-none flex-shrink-0 ${
             theme === "dark"
-              ? "bg-gray-900 text-gray-500"
-              : "bg-gray-100 text-gray-500"
+              ? "bg-[#1e1a17] text-[#b5a9a2]"
+              : "bg-[#fefaf8] text-[#868e96]"
           }`}
           style={{
             paddingTop: "16px", // Match the textarea's padding-top
@@ -487,7 +487,7 @@ export default function Editor({
               whiteSpace: "pre",
               tabSize: 2,
               color: "transparent",
-              caretColor: theme === "dark" ? "#10b981" : "#059669",
+              caretColor: theme === "dark" ? "#e86f42" : "#e05d30",
               lineHeight: "24px",
               background: "transparent",
               boxSizing: "border-box",
@@ -502,8 +502,8 @@ export default function Editor({
       <div
         className={`absolute bottom-0 left-0 right-0 h-6 flex items-center justify-between px-3 text-xs border-t ${
           theme === "dark"
-            ? "bg-gray-900 border-gray-700 text-gray-400"
-            : "bg-gray-100 border-gray-200 text-gray-600"
+            ? "bg-[#1e1a17] border-[#3e3632] text-[#b5a9a2]"
+            : "bg-[#fff1ec] border-[#efe0d9] text-[#868e96]"
         }`}
       >
         <div>

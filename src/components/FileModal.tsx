@@ -113,8 +113,8 @@ export default function FileModal({
           ? "bg-red-900 text-red-100 border border-red-800"
           : "bg-red-100 text-red-800 border border-red-200"
         : theme === "dark"
-          ? "bg-gray-800 text-gray-200 border border-gray-700"
-          : "bg-white text-gray-800 border border-gray-200"
+          ? "bg-[#312c28] text-[#f3ebe7] border border-[#3e3632]"
+          : "bg-white text-[#212529] border border-[#efe0d9]"
     }`;
 
     // Add icon
@@ -146,21 +146,27 @@ export default function FileModal({
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fadeIn">
       <div
         ref={modalRef}
-        className={`w-full max-w-md rounded-lg shadow-xl ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}
+        className={`w-full max-w-md rounded-lg shadow-xl ${theme === "dark" ? "bg-[#262220]" : "bg-white"}`}
       >
         {/* Modal header */}
         <div
           className={`flex items-center justify-between p-4 border-b ${
-            theme === "dark" ? "border-gray-700" : "border-gray-200"
+            theme === "dark" ? "border-[#3e3632]" : "border-[#efe0d9]"
           }`}
         >
-          <h3 className="text-lg font-medium">Open File</h3>
+          <h3
+            className={`text-lg font-medium ${
+              theme === "dark" ? "text-[#f3ebe7]" : "text-[#212529]"
+            }`}
+          >
+            Open File
+          </h3>
           <button
             onClick={onClose}
             className={`p-1 rounded-full transition-colors ${
               theme === "dark"
-                ? "hover:bg-gray-700 text-gray-400 hover:text-gray-200"
-                : "hover:bg-gray-200 text-gray-600 hover:text-gray-800"
+                ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
+                : "hover:bg-[#fff1ec] text-[#868e96] hover:text-[#212529]"
             }`}
           >
             <X size={18} />
@@ -173,11 +179,11 @@ export default function FileModal({
             className={`relative flex items-center justify-center p-8 border-2 border-dashed rounded-md transition-colors cursor-pointer mb-4 ${
               isDragging
                 ? theme === "dark"
-                  ? "border-emerald-500 bg-emerald-500/10"
-                  : "border-emerald-600 bg-emerald-600/10"
+                  ? "border-[#e86f42] bg-[#e86f42]/10"
+                  : "border-[#e05d30] bg-[#e05d30]/10"
                 : theme === "dark"
-                  ? "border-gray-700 hover:border-gray-600"
-                  : "border-gray-300 hover:border-gray-400"
+                  ? "border-[#3e3632] hover:border-[#e86f42]"
+                  : "border-[#efe0d9] hover:border-[#e05d30]"
             }`}
             onClick={() => fileInputRef.current?.click()}
             onDragOver={handleDragOver}
@@ -194,22 +200,22 @@ export default function FileModal({
             <div className="flex flex-col items-center gap-3">
               <div
                 className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                  theme === "dark" ? "bg-gray-700" : "bg-gray-100"
+                  theme === "dark" ? "bg-[#312c28]" : "bg-[#fff1ec]"
                 }`}
               >
                 <Upload
                   size={28}
-                  className={`transition-colors ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}
+                  className={`transition-colors ${theme === "dark" ? "text-[#d9cec9]" : "text-[#495057]"}`}
                 />
               </div>
               <div className="text-center">
                 <p
-                  className={`text-sm font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+                  className={`text-sm font-medium ${theme === "dark" ? "text-[#f3ebe7]" : "text-[#212529]"}`}
                 >
                   Upload a .ms file
                 </p>
                 <p
-                  className={`text-xs ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}
+                  className={`text-xs ${theme === "dark" ? "text-[#b5a9a2]" : "text-[#868e96]"}`}
                 >
                   Drag and drop or click to browse
                 </p>
@@ -222,8 +228,8 @@ export default function FileModal({
               onClick={onClose}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 theme === "dark"
-                  ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
-                  : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                  ? "bg-[#312c28] hover:bg-[#3e3632] text-[#d9cec9]"
+                  : "bg-[#fff1ec] hover:bg-[#efe0d9] text-[#495057]"
               }`}
             >
               Cancel
@@ -232,8 +238,8 @@ export default function FileModal({
               onClick={() => fileInputRef.current?.click()}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
                 theme === "dark"
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                  : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                  ? "bg-[#e86f42] hover:bg-[#f39c78] text-white"
+                  : "bg-[#e05d30] hover:bg-[#cb502a] text-white"
               }`}
             >
               <FileText size={16} />

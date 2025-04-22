@@ -28,37 +28,38 @@ export default function TokensViewer({
   const getTokenColor = (kind: string, theme: "dark" | "light"): string => {
     const kindLower = kind.toLowerCase();
 
+    // Rust-inspired colors with different shades of orange for different token types
     if (kindLower.includes("keyword")) {
       return theme === "dark"
-        ? "bg-purple-900 text-purple-200"
-        : "bg-purple-100 text-purple-800";
+        ? "bg-[#3d2b1f] text-[#f39c78]"
+        : "bg-[#fff1ec] text-[#cb502a]";
     } else if (kindLower.includes("identifier")) {
       return theme === "dark"
-        ? "bg-blue-900 text-blue-200"
-        : "bg-blue-100 text-blue-800";
+        ? "bg-[#312c28] text-[#e86f42]"
+        : "bg-[#fef5f1] text-[#e05d30]";
     } else if (kindLower.includes("number") || kindLower.includes("integer")) {
       return theme === "dark"
-        ? "bg-green-900 text-green-200"
-        : "bg-green-100 text-green-800";
+        ? "bg-[#3e3632] text-[#fb8f67]"
+        : "bg-[#fdf8f6] text-[#a84424]";
     } else if (kindLower.includes("string")) {
       return theme === "dark"
-        ? "bg-yellow-900 text-yellow-200"
-        : "bg-yellow-100 text-yellow-800";
+        ? "bg-[#362e2a] text-[#ffb86c]"
+        : "bg-[#fef6f2] text-[#ed7d39]";
     } else if (kindLower.includes("operator")) {
       return theme === "dark"
-        ? "bg-red-900 text-red-200"
-        : "bg-red-100 text-red-800";
+        ? "bg-[#402f27] text-[#f3ebe7]"
+        : "bg-[#feece5] text-[#cb502a]";
     } else if (
       kindLower.includes("punctuation") ||
       kindLower.includes("delimiter")
     ) {
       return theme === "dark"
-        ? "bg-gray-700 text-gray-200"
-        : "bg-gray-200 text-gray-800";
+        ? "bg-[#312c28] text-[#d9cec9]"
+        : "bg-[#fff1ec] text-[#495057]";
     } else {
       return theme === "dark"
-        ? "bg-gray-700 text-gray-200"
-        : "bg-gray-200 text-gray-800";
+        ? "bg-[#312c28] text-[#d9cec9]"
+        : "bg-[#fff1ec] text-[#495057]";
     }
   };
 
@@ -66,7 +67,7 @@ export default function TokensViewer({
     <div className="animate-fadeIn" ref={tableRef}>
       <div
         className={`overflow-auto rounded-lg border shadow-sm ${
-          theme === "dark" ? "border-gray-700" : "border-gray-200"
+          theme === "dark" ? "border-[#3e3632]" : "border-[#efe0d9]"
         }`}
         style={{ maxHeight: "calc(100vh - 200px)" }}
       >
@@ -74,8 +75,8 @@ export default function TokensViewer({
           <thead
             className={`text-xs uppercase sticky top-0 z-10 ${
               theme === "dark"
-                ? "bg-gray-700 text-gray-300"
-                : "bg-gray-100 text-gray-700"
+                ? "bg-[#312c28] text-[#d9cec9]"
+                : "bg-[#fff1ec] text-[#495057]"
             }`}
           >
             <tr>
@@ -89,8 +90,8 @@ export default function TokensViewer({
           <tbody
             className={
               theme === "dark"
-                ? "divide-y divide-gray-700"
-                : "divide-y divide-gray-200"
+                ? "divide-y divide-[#3e3632]"
+                : "divide-y divide-[#efe0d9]"
             }
           >
             {filteredTokens.map((token: Token, index: number) => (
@@ -99,11 +100,11 @@ export default function TokensViewer({
                 className={`transition-colors hover:bg-opacity-50 ${
                   index % 2 === 0
                     ? theme === "dark"
-                      ? "bg-gray-800 hover:bg-gray-700"
-                      : "bg-white hover:bg-gray-50"
+                      ? "bg-[#262220] hover:bg-[#312c28]"
+                      : "bg-white hover:bg-[#fff1ec]"
                     : theme === "dark"
-                      ? "bg-gray-750 hover:bg-gray-700"
-                      : "bg-gray-50 hover:bg-gray-100"
+                      ? "bg-[#1e1a17] hover:bg-[#312c28]"
+                      : "bg-[#fefaf8] hover:bg-[#fff1ec]"
                 }`}
               >
                 <td className="px-4 py-2">

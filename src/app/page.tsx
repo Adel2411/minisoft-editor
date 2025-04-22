@@ -86,11 +86,12 @@ EndPg;`,
       );
       setCompilationResult(compilationResult);
 
-      // Check for errors in the compilation result
       if (compilationResult.errors) {
         setError(compilationResult.errors);
+        showNotification("Compilation process failed with errors", true);
       } else {
-        setError(null); // Clear errors if no errors exist
+        setError(null);
+        showNotification("Compilation process completed successfully!");
       }
     } catch (err: unknown) {
       setError({
@@ -98,6 +99,7 @@ EndPg;`,
         syntax_errors: [],
         semantic_errors: [],
       });
+      showNotification("Compilation process failed unexpectedly", true);
     } finally {
       setIsCompiling(false);
     }
@@ -135,8 +137,8 @@ EndPg;`,
           ? "bg-red-900 text-red-100 border border-red-800"
           : "bg-red-100 text-red-800 border border-red-200"
         : theme === "dark"
-          ? "bg-gray-800 text-gray-200 border border-gray-700"
-          : "bg-white text-gray-800 border border-gray-200"
+          ? "bg-[#312c28] text-gray-200 border border-[#3e3632]"
+          : "bg-white text-gray-800 border border-[#efe0d9]"
     }`;
 
     // Add icon
@@ -170,8 +172,8 @@ EndPg;`,
     <main
       className={`flex min-h-screen flex-col transition-colors duration-300 ${
         theme === "dark"
-          ? "bg-gray-900 text-gray-100"
-          : "bg-gray-50 text-gray-900"
+          ? "bg-[#1e1a17] text-[#f3ebe7]"
+          : "bg-[#fefaf8] text-gray-900"
       }`}
     >
       {/* Welcome overlay */}
@@ -179,7 +181,7 @@ EndPg;`,
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/70">
           <div
             className={`p-6 rounded-lg shadow-xl max-w-md text-center transform transition-all duration-500 animate-fadeIn ${
-              theme === "dark" ? "bg-gray-800" : "bg-white"
+              theme === "dark" ? "bg-[#262220]" : "bg-white"
             }`}
           >
             <h2 className="text-2xl font-bold mb-4">
@@ -190,17 +192,17 @@ EndPg;`,
             </p>
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div
-                className={`p-3 rounded-md ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}
+                className={`p-3 rounded-md ${theme === "dark" ? "bg-[#312c28]" : "bg-[#fff1ec]"}`}
               >
-                <div className="text-emerald-500 mb-2">
+                <div className="text-[#e86f42] mb-2">
                   <Code size={24} className="mx-auto" />
                 </div>
                 <p className="text-sm">Syntax highlighting</p>
               </div>
               <div
-                className={`p-3 rounded-md ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}
+                className={`p-3 rounded-md ${theme === "dark" ? "bg-[#312c28]" : "bg-[#fff1ec]"}`}
               >
-                <div className="text-emerald-500 mb-2">
+                <div className="text-[#e86f42] mb-2">
                   <Terminal size={24} className="mx-auto" />
                 </div>
                 <p className="text-sm">Compilation results</p>
@@ -210,8 +212,8 @@ EndPg;`,
               onClick={() => setShowWelcome(false)}
               className={`px-4 py-2 rounded-md text-white font-medium transition-colors ${
                 theme === "dark"
-                  ? "bg-emerald-600 hover:bg-emerald-700"
-                  : "bg-emerald-600 hover:bg-emerald-700"
+                  ? "bg-[#e86f42] hover:bg-[#f39c78]"
+                  : "bg-[#e05d30] hover:bg-[#cb502a]"
               }`}
             >
               Get Started
@@ -230,13 +232,13 @@ EndPg;`,
 
       <header
         className={`flex items-center justify-between p-3 border-b transition-colors duration-300 ${
-          theme === "dark" ? "border-gray-700" : "border-gray-200"
+          theme === "dark" ? "border-[#3e3632]" : "border-[#efe0d9]"
         }`}
       >
         <div className="flex items-center gap-2">
           <div
             className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-              theme === "dark" ? "bg-emerald-500" : "bg-emerald-600"
+              theme === "dark" ? "bg-[#e86f42]" : "bg-[#e05d30]"
             }`}
           ></div>
           <h1 className="text-xl font-bold">MiniSoft Editor</h1>
@@ -244,8 +246,8 @@ EndPg;`,
             <span
               className={`text-sm px-2 py-0.5 rounded-md ml-2 ${
                 theme === "dark"
-                  ? "bg-gray-800 text-gray-400"
-                  : "bg-gray-200 text-gray-600"
+                  ? "bg-[#312c28] text-[#b5a9a2]"
+                  : "bg-[#fff1ec] text-gray-600"
               }`}
             >
               {currentFileName}
@@ -256,14 +258,14 @@ EndPg;`,
         <div className="flex items-center">
           {/* File operations */}
           <div
-            className={`flex items-center mr-4 border-r pr-4 ${theme === "dark" ? "border-gray-700" : "border-gray-300"}`}
+            className={`flex items-center mr-4 border-r pr-4 ${theme === "dark" ? "border-[#3e3632]" : "border-[#efe0d9]"}`}
           >
             <button
               onClick={() => setIsFileModalOpen(true)}
               className={`p-2 rounded-md transition-colors flex items-center gap-1.5 ${
                 theme === "dark"
-                  ? "hover:bg-gray-800 text-gray-300"
-                  : "hover:bg-gray-200 text-gray-700"
+                  ? "hover:bg-[#312c28] text-[#d9cec9]"
+                  : "hover:bg-[#fff1ec] text-gray-700"
               }`}
               title="Open File"
             >
@@ -275,8 +277,8 @@ EndPg;`,
               onClick={downloadFile}
               className={`p-2 rounded-md transition-colors flex items-center gap-1.5 ${
                 theme === "dark"
-                  ? "hover:bg-gray-800 text-gray-300"
-                  : "hover:bg-gray-200 text-gray-700"
+                  ? "hover:bg-[#312c28] text-[#d9cec9]"
+                  : "hover:bg-[#fff1ec] text-gray-700"
               }`}
               title="Save File"
             >
@@ -293,8 +295,8 @@ EndPg;`,
               isCompiling
                 ? "bg-gray-500 cursor-not-allowed"
                 : theme === "dark"
-                  ? "bg-emerald-600 hover:bg-emerald-700"
-                  : "bg-emerald-600 hover:bg-emerald-700"
+                  ? "bg-[#e86f42] hover:bg-[#f39c78]"
+                  : "bg-[#e05d30] hover:bg-[#cb502a]"
             }`}
             title="Compile Code"
           >
@@ -310,8 +312,8 @@ EndPg;`,
               onClick={toggleTheme}
               className={`p-2 rounded-md transition-colors ${
                 theme === "dark"
-                  ? "hover:bg-gray-800 text-gray-300"
-                  : "hover:bg-gray-200 text-gray-700"
+                  ? "hover:bg-[#312c28] text-[#d9cec9]"
+                  : "hover:bg-[#fff1ec] text-gray-700"
               }`}
               title={
                 theme === "dark"
@@ -325,8 +327,8 @@ EndPg;`,
             <button
               className={`p-2 rounded-md transition-colors ${
                 theme === "dark"
-                  ? "hover:bg-gray-800 text-gray-300"
-                  : "hover:bg-gray-200 text-gray-700"
+                  ? "hover:bg-[#312c28] text-[#d9cec9]"
+                  : "hover:bg-[#fff1ec] text-gray-700"
               }`}
               title="Settings"
             >
@@ -339,12 +341,12 @@ EndPg;`,
       <div className={`flex flex-col md:flex-row flex-1`}>
         <div
           className={`w-full md:w-1/2 border-r transition-colors duration-300 ${
-            theme === "dark" ? "border-gray-700" : "border-gray-200"
+            theme === "dark" ? "border-[#3e3632]" : "border-[#efe0d9]"
           } `}
         >
           <div
             className={`flex border-b transition-colors duration-300 ${
-              theme === "dark" ? "border-gray-700" : "border-gray-200"
+              theme === "dark" ? "border-[#3e3632]" : "border-[#efe0d9]"
             }`}
           >
             <button
@@ -352,8 +354,8 @@ EndPg;`,
               className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors duration-200 ${
                 activeTab === "editor"
                   ? theme === "dark"
-                    ? "border-b-2 border-emerald-500 text-emerald-500"
-                    : "border-b-2 border-emerald-600 text-emerald-600"
+                    ? "border-b-2 border-[#e86f42] text-[#e86f42]"
+                    : "border-b-2 border-[#e05d30] text-[#e05d30]"
                   : ""
               }`}
             >
@@ -374,12 +376,12 @@ EndPg;`,
         {compilationResult && (
           <div
             className={`w-full md:w-1/2 transition-colors duration-300 ${
-              theme === "dark" ? "bg-gray-800" : "bg-white"
+              theme === "dark" ? "bg-[#262220]" : "bg-white"
             } `}
           >
             <div
               className={`flex border-b transition-colors duration-300 ${
-                theme === "dark" ? "border-gray-700" : "border-gray-200"
+                theme === "dark" ? "border-[#3e3632]" : "border-[#efe0d9]"
               }`}
             >
               <button
@@ -387,8 +389,8 @@ EndPg;`,
                 className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors duration-200 ${
                   activeTab === "tokens"
                     ? theme === "dark"
-                      ? "border-b-2 border-emerald-500 text-emerald-500"
-                      : "border-b-2 border-emerald-600 text-emerald-600"
+                      ? "border-b-2 border-[#e86f42] text-[#e86f42]"
+                      : "border-b-2 border-[#e05d30] text-[#e05d30]"
                     : ""
                 }`}
               >
@@ -400,8 +402,8 @@ EndPg;`,
                 className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors duration-200 ${
                   activeTab === "ast"
                     ? theme === "dark"
-                      ? "border-b-2 border-emerald-500 text-emerald-500"
-                      : "border-b-2 border-emerald-600 text-emerald-600"
+                      ? "border-b-2 border-[#e86f42] text-[#e86f42]"
+                      : "border-b-2 border-[#e05d30] text-[#e05d30]"
                     : ""
                 }`}
               >
@@ -413,8 +415,8 @@ EndPg;`,
                 className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors duration-200 ${
                   activeTab === "symbols"
                     ? theme === "dark"
-                      ? "border-b-2 border-emerald-500 text-emerald-500"
-                      : "border-b-2 border-emerald-600 text-emerald-600"
+                      ? "border-b-2 border-[#e86f42] text-[#e86f42]"
+                      : "border-b-2 border-[#e05d30] text-[#e05d30]"
                     : ""
                 }`}
               >
@@ -426,8 +428,8 @@ EndPg;`,
                 className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors duration-200 ${
                   activeTab === "quadruples"
                     ? theme === "dark"
-                      ? "border-b-2 border-emerald-500 text-emerald-500"
-                      : "border-b-2 border-emerald-600 text-emerald-600"
+                      ? "border-b-2 border-[#e86f42] text-[#e86f42]"
+                      : "border-b-2 border-[#e05d30] text-[#e05d30]"
                     : ""
                 }`}
               >
