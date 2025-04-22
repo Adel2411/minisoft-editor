@@ -6,75 +6,70 @@
 
 /* Token colors - Light theme */
 .token.keyword {
-  color: #0000ff;
-  font-weight: bold;
+  color: #1c6bdc; /* Softer blue */
 }
 
 .token.control {
-  color: #af00db;
-  font-weight: bold;
+  color: #9a2fb2; /* Less saturated purple */
 }
 
 .token.io {
-  color: #0070c1;
+  color: #0065b0; /* Deeper blue for better contrast */
 }
 
 .token.preprocessor {
-  color: #098658;
+  color: #0b7c4f; /* Adjusted green */
 }
 
 .token.constant {
-  color: #7d2727;
+  color: #7d4827; /* Distinct brown for constants */
 }
 
 .token.punctuation {
-  color: #000000;
+  color: #2d2d2d; /* Dark gray instead of pure black */
 }
 
 .token.bracket {
-  color: #000000;
+  color: #2d2d2d; /* Dark gray instead of pure black */
 }
 
 .token.operator {
-  color: #000000;
+  color: #067d82; /* Teal for operators to distinguish from other symbols */
 }
 
 .token.logical {
-  color: #af00db;
-  font-weight: bold;
+  color: #9437aa; /* Distinct from control but still purple family */
 }
 
 .token.number {
-  color: #098658;
+  color: #09855c; /* Warmer green */
 }
 
 .token.string {
-  color: #a31515;
+  color: #aa3731; /* Warmer red */
 }
 
 .token.identifier {
-  color: #001080;
+  color: #00498f; /* More readable blue */
 }
 
 .token.comment {
-  color: #666666; /* Changed from green to gray */
-  font-style: italic; /* Adding italics to better identify comments */
+  color: #606060; /* Slightly darker gray for better readability */
+  font-style: italic;
 }
 
 .token.error {
-  color: #ff0000;
+  color: #e01d1d; /* Less harsh red */
   text-decoration: wavy underline;
 }
 
 /* Token colors - Dark theme */
 [data-theme="dark"] .token.keyword {
   color: #569cd6;
-  font-weight: bold;
 }
 
 [data-theme="dark"] .token.control {
   color: #c586c0;
-  font-weight: bold;
 }
 
 [data-theme="dark"] .token.io {
@@ -103,7 +98,6 @@
 
 [data-theme="dark"] .token.logical {
   color: #c586c0;
-  font-weight: bold;
 }
 
 [data-theme="dark"] .token.number {
@@ -134,7 +128,9 @@
 }
 
 /* Fix alignment between the textarea and highlighted code */
-pre, code, .token {
+pre,
+code,
+.token {
   font-family: inherit;
   font-size: inherit;
   line-height: inherit;

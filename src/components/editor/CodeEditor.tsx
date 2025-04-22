@@ -10,7 +10,7 @@ import {
   Save,
   Play,
 } from "lucide-react";
-import {tokenize} from "@/utils/tokenizer";
+import { tokenize } from "@/utils/tokenizer";
 
 interface EditorProps {
   code: string;
@@ -77,20 +77,20 @@ export default function Editor({
 
   // Tokenize and highlight the code whenever it changes
   useEffect(() => {
-      const tokens = tokenize(code); // Tokenize the code
-      console.log(tokens);
-      const highlighted = tokens
-        .map((token) => {
-          // Escape HTML characters to prevent them from being interpreted as HTML tags
-          const escapedValue = token.value
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;");
-          
-          return `<span class="token ${token.type}">${escapedValue}</span>`;
-        })
-        .join("");
-      setHighlightedCode(highlighted);
-    }, [code]);
+    const tokens = tokenize(code); // Tokenize the code
+    console.log(tokens);
+    const highlighted = tokens
+      .map((token) => {
+        // Escape HTML characters to prevent them from being interpreted as HTML tags
+        const escapedValue = token.value
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+
+        return `<span class="token ${token.type}">${escapedValue}</span>`;
+      })
+      .join("");
+    setHighlightedCode(highlighted);
+  }, [code]);
 
   // Function to generate line numbers considering folded sections
   const renderLineNumbers = () => {
