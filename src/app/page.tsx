@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { CompilationResult } from "@/types";
+import type { CompilationErrors, CompilationResult } from "@/types";
 import Editor from "@/components/CodeEditor";
 import ResultPanel from "@/components/ResultPanel";
 import FileModal from "@/components/FileModal";
@@ -49,7 +49,7 @@ EndPg;`,
   const [showWelcome, setShowWelcome] = useState<boolean>(true);
   const [isFileModalOpen, setIsFileModalOpen] = useState<boolean>(false);
   const [currentFileName, setCurrentFileName] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<CompilationErrors | null>(null);
 
   // Set editor as ready after initial render
   useEffect(() => {
@@ -85,8 +85,19 @@ EndPg;`,
         },
       );
       setCompilationResult(compilationResult);
+
+      // Check for errors in the compilation result
+      if (compilationResult.errors) {
+        setError(compilationResult.errors);
+      } else {
+        setError(null); // Clear errors if no errors exist
+      }
     } catch (err: unknown) {
-      setError(`Error: ${String(err)}`);
+      setError({
+        lexical_errors: [],
+        syntax_errors: [],
+        semantic_errors: [],
+      });
     } finally {
       setIsCompiling(false);
     }
@@ -434,7 +445,7 @@ EndPg;`,
       </div>
       {error && (
         <ErrorReporter
-          error={error}
+          errors={error}
           onDismiss={() => setError(null)}
           theme={theme}
         />

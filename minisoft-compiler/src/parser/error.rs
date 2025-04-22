@@ -1,4 +1,4 @@
-use crate::error_reporter::{ErrorReporter, format_code_context};
+use crate::error_reporter::{format_code_context, ErrorReporter};
 use colored::Colorize;
 use lalrpop_util::ParseError;
 use std::fmt;
@@ -367,4 +367,3 @@ where
         ParseError::User { error } => SyntaxError::Custom(error),
     }
 }
-

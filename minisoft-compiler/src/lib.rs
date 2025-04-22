@@ -5,7 +5,7 @@ pub mod lexer;
 pub mod parser;
 pub mod semantics;
 
-use compiler::{CompilationResult, Compiler};
+use crate::compiler::Compiler;
 use parser::ast::{
     Declaration, DeclarationKind, Expression, ExpressionKind, Literal, LiteralKind, Program,
     Statement, StatementKind,
@@ -19,6 +19,7 @@ pub struct SerializableCompilationResult {
     pub ast: SerializableProgram,
     pub symbol_table: Vec<SerializableSymbol>,
     pub quadruples: SerializableQuadrupleProgram,
+    pub errors: Option<SerializableCompilationErrors>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -231,6 +232,126 @@ pub struct SerializableQuadrupleProgram {
     pub next_label: usize,
 }
 
+// Serializable error types
+#[derive(Serialize, Deserialize)]
+pub struct SerializableErrorPosition {
+    pub line: usize,
+    pub column: usize,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(tag = "type", content = "data")]
+pub enum SerializableLexicalErrorType {
+    UnterminatedString,
+    NonAsciiCharacters,
+    IdentifierTooLong,
+    InvalidIdentifier,
+    ConsecutiveUnderscores,
+    TrailingUnderscore,
+    IdentifierStartsWithNumber,
+    IntegerOutOfRange,
+    SignedNumberNotParenthesized,
+    InvalidToken,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SerializableLexicalError {
+    pub error_type: SerializableLexicalErrorType,
+    pub invalid_token: String,
+    pub position: SerializableErrorPosition,
+    pub message: String,
+    pub suggestion: Option<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(tag = "type", content = "data")]
+pub enum SerializableSyntaxError {
+    InvalidToken {
+        position: usize,
+        message: String,
+        line: usize,
+        column: usize,
+    },
+    UnexpectedEOF {
+        position: usize,
+        expected: Vec<String>,
+        line: usize,
+        column: usize,
+    },
+    UnexpectedToken {
+        token: String,
+        expected: Vec<String>,
+        line: usize,
+        column: usize,
+    },
+    ExtraToken {
+        token: String,
+        line: usize,
+        column: usize,
+    },
+    Custom(String),
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(tag = "type", content = "data")]
+pub enum SerializableSemanticError {
+    ArraySizeMismatch {
+        name: String,
+        expected: usize,
+        actual: usize,
+        position: SerializableErrorPosition,
+    },
+    UndeclaredIdentifier {
+        name: String,
+        position: SerializableErrorPosition,
+    },
+    DuplicateDeclaration {
+        name: String,
+        position: SerializableErrorPosition,
+        original_position: SerializableErrorPosition,
+    },
+    TypeMismatch {
+        expected: String,
+        found: String,
+        position: SerializableErrorPosition,
+        context: Option<String>,
+    },
+    DivisionByZero {
+        position: SerializableErrorPosition,
+    },
+    ConstantModification {
+        name: String,
+        position: SerializableErrorPosition,
+    },
+    ArrayIndexOutOfBounds {
+        name: String,
+        index: usize,
+        size: usize,
+        position: SerializableErrorPosition,
+    },
+    InvalidConditionValue {
+        found: String,
+        position: SerializableErrorPosition,
+    },
+    NonArrayIndexing {
+        var_name: String,
+        position: SerializableErrorPosition,
+    },
+    InvalidArraySize {
+        name: String,
+        size: i32,
+        position: SerializableErrorPosition,
+    },
+    EmptyProgram,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SerializableCompilationErrors {
+    pub lexical_errors: Vec<SerializableLexicalError>,
+    pub syntax_errors: Vec<SerializableSyntaxError>,
+    pub semantic_errors: Vec<SerializableSemanticError>,
+}
+
 pub fn run_compiler(code: String, verbose: bool) -> Result<SerializableCompilationResult, String> {
     let mut tmp = std::env::temp_dir();
     tmp.push("tauri_minisoft_input.ms");
@@ -238,51 +359,187 @@ pub fn run_compiler(code: String, verbose: bool) -> Result<SerializableCompilati
         .map_err(|e| format!("failed writing temp file: {}", e))?;
     let path = tmp.to_string_lossy().to_string();
 
+    if verbose {
+        println!("Starting compilation in verbose mode");
+    }
+
     match Compiler::new(&path) {
         Ok(mut compiler) => {
-            if verbose {
-                println!("Starting compilation in verbose mode");
+            match compiler.run() {
+                Ok(result) => {
+                    // Successful compilation
+                    Ok(SerializableCompilationResult {
+                        tokens: result
+                            .tokens
+                            .into_iter()
+                            .map(|t| SerializableToken {
+                                kind: format!("{:?}", t.kind),
+                                value: t.value,
+                                line: t.line,
+                                column: t.column,
+                                span: (t.span.start, t.span.end),
+                            })
+                            .collect(),
+                        ast: result.ast.into(),
+                        symbol_table: result
+                            .symbol_table
+                            .into_iter()
+                            .map(|s| SerializableSymbol {
+                                name: s.name,
+                                kind: format!("{:?}", s.kind),
+                                symbol_type: s.symbol_type.to_string(),
+                                value: format!("{:?}", s.value),
+                                line: s.line,
+                                column: s.column,
+                            })
+                            .collect(),
+                        quadruples: result.quadruples.into(),
+                        errors: None, // No errors on success
+                    })
+                }
+                Err(_) => {
+                    // Handle error case by re-running the individual steps to collect errors
+
+                    // Collect lexical errors first
+                    let (tokens, lexical_errors) = crate::lexer::lexer_core::tokenize(&code);
+
+                    let lexical_errors_serialized = lexical_errors
+                        .iter()
+                        .map(|e| SerializableLexicalError {
+                            error_type: SerializableLexicalErrorType::InvalidToken, // Simplification
+                            invalid_token: e.invalid_token.clone(),
+                            position: SerializableErrorPosition {
+                                line: e.line,
+                                column: e.column,
+                            },
+                            message: format!("Lexical error: {:?} at token '{}'", e.error_type, e.invalid_token),
+                            suggestion: None, // No suggestion field available
+                        })
+                        .collect();
+
+                    // If we have lexical errors, return those
+                    if !lexical_errors.is_empty() {
+                        return Ok(SerializableCompilationResult {
+                            tokens: vec![],
+                            ast: SerializableProgram {
+                                name: "".to_string(),
+                                declarations: vec![],
+                                statements: vec![],
+                            },
+                            symbol_table: vec![],
+                            quadruples: SerializableQuadrupleProgram {
+                                quadruples: vec![],
+                                next_temp: 0,
+                                next_label: 0,
+                            },
+                            errors: Some(SerializableCompilationErrors {
+                                lexical_errors: lexical_errors_serialized,
+                                syntax_errors: vec![],
+                                semantic_errors: vec![],
+                            }),
+                        });
+                    }
+
+                    // If no lexical errors, try parsing to collect syntax errors
+                    let syntax_errors =
+                        match crate::parser::parser_core::parse(tokens.clone(), &code) {
+                            Ok(_) => vec![],
+                            Err(e) => vec![SerializableSyntaxError::Custom(e.to_string())],
+                        };
+
+                    // If we have syntax errors, return those
+                    if !syntax_errors.is_empty() {
+                        return Ok(SerializableCompilationResult {
+                            tokens: tokens
+                                .into_iter()
+                                .map(|t| SerializableToken {
+                                    kind: format!("{:?}", t.kind),
+                                    value: t.value,
+                                    line: t.line,
+                                    column: t.column,
+                                    span: (t.span.start, t.span.end),
+                                })
+                                .collect(),
+                            ast: SerializableProgram {
+                                name: "".to_string(),
+                                declarations: vec![],
+                                statements: vec![],
+                            },
+                            symbol_table: vec![],
+                            quadruples: SerializableQuadrupleProgram {
+                                quadruples: vec![],
+                                next_temp: 0,
+                                next_label: 0,
+                            },
+                            errors: Some(SerializableCompilationErrors {
+                                lexical_errors: vec![],
+                                syntax_errors,
+                                semantic_errors: vec![],
+                            }),
+                        });
+                    }
+
+                    // If no syntax errors, try semantic analysis
+                    let ast = crate::parser::parser_core::parse(tokens.clone(), &code).unwrap();
+                    let mut analyzer = crate::semantics::SemanticAnalyzer::new(&code);
+                    analyzer.analyze(&ast);
+
+                    let semantic_errors = analyzer.get_errors();
+                    let semantic_errors_serialized = semantic_errors
+                        .iter()
+                        .map(|e| SerializableSemanticError::EmptyProgram) // Simplification
+                        .collect();
+
+                    // Return with semantic errors
+                    Ok(SerializableCompilationResult {
+                        tokens: tokens
+                            .into_iter()
+                            .map(|t| SerializableToken {
+                                kind: format!("{:?}", t.kind),
+                                value: t.value,
+                                line: t.line,
+                                column: t.column,
+                                span: (t.span.start, t.span.end),
+                            })
+                            .collect(),
+                        ast: ast.into(),
+                        symbol_table: vec![],
+                        quadruples: SerializableQuadrupleProgram {
+                            quadruples: vec![],
+                            next_temp: 0,
+                            next_label: 0,
+                        },
+                        errors: Some(SerializableCompilationErrors {
+                            lexical_errors: vec![],
+                            syntax_errors: vec![],
+                            semantic_errors: semantic_errors_serialized,
+                        }),
+                    })
+                }
             }
-
-            compiler
-                .run()
-                .map(convert_to_serializable)
-                .map_err(|code| format!("Compilation failed with code: {}", code))
         }
-        Err(err) => Err(err),
-    }
-}
-
-fn convert_to_serializable(result: CompilationResult) -> SerializableCompilationResult {
-    SerializableCompilationResult {
-        tokens: result
-            .tokens
-            .into_iter()
-            .map(|t| SerializableToken {
-                kind: format!("{:?}", t.kind),
-                value: t.value,
-                line: t.line,
-                column: t.column,
-                span: (t.span.start, t.span.end),
+        Err(err) => {
+            // Compiler initialization failed
+            Ok(SerializableCompilationResult {
+                tokens: vec![],
+                ast: SerializableProgram {
+                    name: "".to_string(),
+                    declarations: vec![],
+                    statements: vec![],
+                },
+                symbol_table: vec![],
+                quadruples: SerializableQuadrupleProgram {
+                    quadruples: vec![],
+                    next_temp: 0,
+                    next_label: 0,
+                },
+                errors: Some(SerializableCompilationErrors {
+                    lexical_errors: vec![],
+                    syntax_errors: vec![],
+                    semantic_errors: vec![SerializableSemanticError::EmptyProgram],
+                }),
             })
-            .collect(),
-
-        ast: result.ast.into(),
-
-        symbol_table: result
-            .symbol_table
-            .into_iter()
-            .map(|s| SerializableSymbol {
-                name: s.name,
-                kind: format!("{:?}", s.kind),
-                symbol_type: s.symbol_type.to_string(),
-                value: format!("{:?}", s.value),
-                line: s.line,
-                column: s.column,
-            })
-            .collect(),
-
-        quadruples: result.quadruples.into(),
+        }
     }
 }
 
