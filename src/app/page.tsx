@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import ErrorReporter from "@/components/ErrorReporter";
+import Image from "next/image";
 
 export default function Home() {
   const [code, setCode] = useState<string>(
@@ -236,11 +237,12 @@ EndPg;`,
         }`}
       >
         <div className="flex items-center gap-2">
-          <div
-            className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-              theme === "dark" ? "bg-[#e86f42]" : "bg-[#e05d30]"
-            }`}
-          ></div>
+          <Image
+            src={"/minisoft-icon.png"}
+            alt="MiniSoft Editor Logo"
+            width={30}
+            height={30}
+          />
           <h1 className="text-xl font-bold">MiniSoft Editor</h1>
           {currentFileName && (
             <span
