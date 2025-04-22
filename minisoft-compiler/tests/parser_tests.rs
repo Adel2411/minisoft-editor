@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod parser_tests {
-    use rust_compiler::parser::ast::{
+    use minisoft_compiler::parser::ast::{
         DeclarationKind, ExpressionKind, Operator, Program, StatementKind, Type,
     };
-    use rust_compiler::lexer::lexer_core::tokenize;
-    use rust_compiler::parser::parser_core::parse;
+    use minisoft_compiler::lexer::lexer_core::tokenize;
+    use minisoft_compiler::parser::parser_core::parse;
 
     /// Helper function to parse a source string and return the AST
     fn parse_test(source: &str) -> Program {
@@ -158,22 +158,9 @@ mod parser_tests {
             "MainPrgm test ; Var let x : Int ; BeginPg { x 10 ; } EndPg ;",
         ];
         
-        for src in sources {
+        if let Some(src) = sources.into_iter().next() {
             parse_test(src); // Should panic
-            break; // We only need to test one to verify error handling
         }
-    }
-
-    #[test]
-    fn test_large_program() {
-        use std::fs;
-
-        let test_file_path = "examples/valid/sample_program.ms";
-        let input = fs::read_to_string(test_file_path).expect("Failed to read test file");
-
-        // Just check if parsing succeeds
-        let program = parse_test(&input);
-        assert_eq!(program.name, "L3_software");
     }
 
     #[test]

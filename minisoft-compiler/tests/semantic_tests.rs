@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod semantic_tests {
-    use rust_compiler::lexer::lexer_core::tokenize;
-    use rust_compiler::parser::parser_core::parse;
-    use rust_compiler::semantics::analyzer_core::SemanticAnalyzer;
+    use minisoft_compiler::lexer::lexer_core::tokenize;
+    use minisoft_compiler::parser::parser_core::parse;
+    use minisoft_compiler::semantics::analyzer_core::SemanticAnalyzer;
 
     /// Helper function to analyze code semantically and return error messages as strings
     fn analyze_test(source: &str) -> Vec<String> {
