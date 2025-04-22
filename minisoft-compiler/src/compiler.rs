@@ -12,10 +12,8 @@ use std::fs;
 pub struct Compiler {
     source_code: String,
     file_path: String,
-    quadruples: Option<QuadrupleProgram>,
 }
 
-// First, add a new struct to hold all compilation artifacts
 pub struct CompilationResult {
     pub tokens: Vec<TokenWithMetaData>,
     pub ast: Program,
@@ -29,13 +27,11 @@ impl Compiler {
             Ok(content) => Ok(Self {
                 source_code: content,
                 file_path: file_path.to_string(),
-                quadruples: None,
             }),
             Err(e) => Err(format!("Error reading file '{}': {}", file_path, e)),
         }
     }
 
-    // Update the run method to return compilation artifacts
     pub fn run(&mut self) -> Result<CompilationResult, i32> {
         println!("Compiling file: {}", self.file_path);
         self.print_source_code();
@@ -75,8 +71,8 @@ impl Compiler {
             .get_symbol_table()
             .get_all()
             .iter()
-            .map(|symbol| (*symbol).clone())
-            .collect();
+            .map(|symbol| (*symbol).clone()) // Dereference first, then clone
+            .collect::<Vec<_>>();
 
         // Return all compiled artifacts
         Ok(CompilationResult {
@@ -87,7 +83,6 @@ impl Compiler {
         })
     }
 
-    // Add a new helper method to print quadruples from a parameter
     fn print_quadruples_from(&self, quadruples: &QuadrupleProgram) {
         println!("{}", "Generated Quadruples:".bold().underline());
         for (i, quad) in quadruples.quadruples.iter().enumerate() {
@@ -98,13 +93,6 @@ impl Compiler {
                 index_str.green()
             };
             println!("{}│ {}", index, quad);
-        }
-    }
-
-    // Use this method to print quadruples from self.quadruples
-    fn print_quadruples(&self) {
-        if let Some(quadruples) = &self.quadruples {
-            self.print_quadruples_from(quadruples);
         }
     }
 
@@ -145,44 +133,9 @@ impl Compiler {
             Err(parse_error) => {
                 println!("{}", "Parser Error Detected:".red().bold());
                 ErrorReportFormatter::print_errors(&[parse_error], Some(&self.source_code));
-                return Err(1);
+                Err(1)
             }
         }
-    }
-
-    fn semantic_analysis(&mut self, program: &crate::parser::ast::Program) -> Result<(), i32> {
-        println!("\n{}", "Semantic Analysis:".bold().underline());
-
-        // Create analyzer with source code for span-to-line/column conversion
-        let mut analyzer = SemanticAnalyzer::new(&self.source_code);
-        analyzer.analyze(program);
-
-        // Check for semantic errors
-        let semantic_errors = analyzer.get_errors();
-        if !semantic_errors.is_empty() {
-            println!("{}", "Semantic Errors Detected:".red().bold());
-            ErrorReportFormatter::print_errors(&semantic_errors, Some(&self.source_code));
-            Err(1)
-        } else {
-            println!("{}", "analysis completed successfully.".green());
-            self.print_symbol_table(&analyzer);
-            Ok(())
-        }
-    }
-
-    fn code_generation(&mut self, program: &Program) -> Result<(), i32> {
-        println!("\n{}", "Code Generation:".bold().underline());
-
-        let mut code_generator = CodeGenerator::new();
-
-        // Store the generated quadruples
-        self.quadruples = code_generator.generate_code(program);
-
-        // Print the generated quadruples
-        self.print_quadruples();
-
-        println!("{}", "Code generation completed successfully.".green());
-        Ok(())
     }
 
     fn print_source_code(&self) {
@@ -225,21 +178,17 @@ impl Compiler {
             };
 
             let value = match &symbol.value {
-                SymbolValue::Single(lit) => format!("{}", LiteralKind::format_literal(lit))
-                    .green()
-                    .to_string(),
+                SymbolValue::Single(lit) => LiteralKind::format_literal(lit).to_string().green(),
                 SymbolValue::Array(values) => {
                     if values.is_empty() {
-                        "[]".dimmed().to_string()
+                        "[]".dimmed()
                     } else {
-                        let elements: Vec<String> = values
-                            .iter()
-                            .map(|v| LiteralKind::format_literal(v))
-                            .collect();
-                        format!("[{}]", elements.join(", ")).green().to_string()
+                        let elements: Vec<String> =
+                            values.iter().map(LiteralKind::format_literal).collect();
+                        format!("[{}]", elements.join(", ")).green()
                     }
                 }
-                SymbolValue::Uninitialized => "<uninitialized>".dimmed().to_string(),
+                SymbolValue::Uninitialized => "<uninitialized>".dimmed(),
             };
 
             println!(
