@@ -1,0 +1,141 @@
+/* Base styles for the editor */
+.token {
+  display: inline;
+  white-space: pre;
+}
+
+/* Token colors - Light theme */
+.token.keyword {
+  color: #0000ff;
+  font-weight: bold;
+}
+
+.token.control {
+  color: #af00db;
+  font-weight: bold;
+}
+
+.token.io {
+  color: #0070c1;
+}
+
+.token.preprocessor {
+  color: #098658;
+}
+
+.token.constant {
+  color: #7d2727;
+}
+
+.token.punctuation {
+  color: #000000;
+}
+
+.token.bracket {
+  color: #000000;
+}
+
+.token.operator {
+  color: #000000;
+}
+
+.token.logical {
+  color: #af00db;
+  font-weight: bold;
+}
+
+.token.number {
+  color: #098658;
+}
+
+.token.string {
+  color: #a31515;
+}
+
+.token.identifier {
+  color: #001080;
+}
+
+.token.comment {
+  color: #666666; /* Changed from green to gray */
+  font-style: italic; /* Adding italics to better identify comments */
+}
+
+.token.error {
+  color: #ff0000;
+  text-decoration: wavy underline;
+}
+
+/* Token colors - Dark theme */
+[data-theme="dark"] .token.keyword {
+  color: #569cd6;
+  font-weight: bold;
+}
+
+[data-theme="dark"] .token.control {
+  color: #c586c0;
+  font-weight: bold;
+}
+
+[data-theme="dark"] .token.io {
+  color: #4fc1ff;
+}
+
+[data-theme="dark"] .token.preprocessor {
+  color: #6a9955;
+}
+
+[data-theme="dark"] .token.constant {
+  color: #b5cea8;
+}
+
+[data-theme="dark"] .token.punctuation {
+  color: #d4d4d4;
+}
+
+[data-theme="dark"] .token.bracket {
+  color: #d4d4d4;
+}
+
+[data-theme="dark"] .token.operator {
+  color: #d4d4d4;
+}
+
+[data-theme="dark"] .token.logical {
+  color: #c586c0;
+  font-weight: bold;
+}
+
+[data-theme="dark"] .token.number {
+  color: #b5cea8;
+}
+
+[data-theme="dark"] .token.string {
+  color: #ce9178;
+}
+
+[data-theme="dark"] .token.identifier {
+  color: #9cdcfe;
+}
+
+[data-theme="dark"] .token.comment {
+  color: #8a8a8a; /* Changed from green to gray */
+  font-style: italic;
+}
+
+[data-theme="dark"] .token.error {
+  color: #f14c4c;
+  text-decoration: wavy underline;
+}
+
+/* Whitespace handling - make sure spaces never get a background color */
+.token.whitespace {
+  background-color: transparent !important;
+}
+
+/* Fix alignment between the textarea and highlighted code */
+pre, code, .token {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}

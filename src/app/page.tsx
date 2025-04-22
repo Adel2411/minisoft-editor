@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { CompilationErrors, CompilationResult } from "@/types";
-import Editor from "@/components/CodeEditor";
+import Editor from "@/components/editor/CodeEditor";
 import ResultPanel from "@/components/ResultPanel";
 import FileModal from "@/components/FileModal";
 import {

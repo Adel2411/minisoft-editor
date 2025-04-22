@@ -1,8 +1,7 @@
 "use client";
 
-import type React from "react";
-
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import "./CodeEditor.css"; // Import CSS for syntax highlighting
 import {
   ChevronDown,
   ChevronRight,
@@ -11,6 +10,7 @@ import {
   Save,
   Play,
 } from "lucide-react";
+import {tokenize} from "@/utils/tokenizer";
 
 interface EditorProps {
   code: string;
@@ -39,6 +39,7 @@ export default function Editor({
   const [matches, setMatches] = useState<number[]>([]);
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [foldedLines, setFoldedLines] = useState<number[]>([]);
+  const [highlightedCode, setHighlightedCode] = useState<string>("");
 
   // Update line numbers when code changes
   useEffect(() => {
@@ -73,6 +74,23 @@ export default function Editor({
     textarea.addEventListener("scroll", handleScroll);
     return () => textarea.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Tokenize and highlight the code whenever it changes
+  useEffect(() => {
+      const tokens = tokenize(code); // Tokenize the code
+      console.log(tokens);
+      const highlighted = tokens
+        .map((token) => {
+          // Escape HTML characters to prevent them from being interpreted as HTML tags
+          const escapedValue = token.value
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+          
+          return `<span class="token ${token.type}">${escapedValue}</span>`;
+        })
+        .join("");
+      setHighlightedCode(highlighted);
+    }, [code]);
 
   // Function to generate line numbers considering folded sections
   const renderLineNumbers = () => {
@@ -370,82 +388,115 @@ export default function Editor({
         </div>
       )}
 
-      {/* Line numbers with fold indicators */}
+      {/* Editor content with single scroll container */}
       <div
-        ref={lineNumbersRef}
-        className={`absolute left-0 top-0 bottom-6 w-12 overflow-hidden select-none ${
-          theme === "dark"
-            ? "bg-gray-900 text-gray-500"
-            : "bg-gray-100 text-gray-500"
-        }`}
+        className={`flex w-full`}
         style={{
-          top: isSearchOpen ? "calc(2.5rem + 2.5rem)" : "2.5rem",
-          paddingTop: "16px", // Match the textarea's padding-top (p-4)
-          lineHeight: "24px", // Consistent line height
-          overflowY: "hidden",
+          height: `calc(100% - ${isSearchOpen ? "6rem" : "3.5rem"})`,
         }}
       >
-        {renderLineNumbers().map((lineNum) => (
-          <div
-            key={lineNum}
-            className={`flex items-center justify-end pr-2 h-6 leading-6 ${
-              code.split("\n")[lineNum - 1]?.trim().endsWith("{") ||
-              code.split("\n")[lineNum - 1]?.trim().endsWith("(") ||
-              code.split("\n")[lineNum - 1]?.trim().endsWith("[")
-                ? "cursor-pointer"
-                : ""
-            }`}
-            onClick={() => {
-              if (
+        {/* Line numbers with fold indicators */}
+        <div
+          ref={lineNumbersRef}
+          className={`sticky left-0 w-12 select-none flex-shrink-0 ${
+            theme === "dark"
+              ? "bg-gray-900 text-gray-500"
+              : "bg-gray-100 text-gray-500"
+          }`}
+          style={{
+            paddingTop: "16px", // Match the textarea's padding-top
+            lineHeight: "24px", // Consistent line height
+          }}
+        >
+          {renderLineNumbers().map((lineNum) => (
+            <div
+              key={lineNum}
+              className={`flex items-center justify-end pr-2 h-6 leading-6 ${
                 code.split("\n")[lineNum - 1]?.trim().endsWith("{") ||
                 code.split("\n")[lineNum - 1]?.trim().endsWith("(") ||
                 code.split("\n")[lineNum - 1]?.trim().endsWith("[")
-              ) {
-                toggleFold(lineNum);
-              }
-            }}
-          >
-            <span className="mr-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              {(code.split("\n")[lineNum - 1]?.trim().endsWith("{") ||
-                code.split("\n")[lineNum - 1]?.trim().endsWith("(") ||
-                code.split("\n")[lineNum - 1]?.trim().endsWith("[")) &&
-                (foldedLines.includes(lineNum) ? (
-                  <ChevronRight size={12} />
-                ) : (
-                  <ChevronDown size={12} />
-                ))}
-            </span>
-            <span>{lineNum}</span>
-          </div>
-        ))}
-      </div>
+                  ? "cursor-pointer"
+                  : ""
+              }`}
+              onClick={() => {
+                if (
+                  code.split("\n")[lineNum - 1]?.trim().endsWith("{") ||
+                  code.split("\n")[lineNum - 1]?.trim().endsWith("(") ||
+                  code.split("\n")[lineNum - 1]?.trim().endsWith("[")
+                ) {
+                  toggleFold(lineNum);
+                }
+              }}
+            >
+              <span className="mr-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                {(code.split("\n")[lineNum - 1]?.trim().endsWith("{") ||
+                  code.split("\n")[lineNum - 1]?.trim().endsWith("(") ||
+                  code.split("\n")[lineNum - 1]?.trim().endsWith("[")) &&
+                  (foldedLines.includes(lineNum) ? (
+                    <ChevronRight size={12} />
+                  ) : (
+                    <ChevronDown size={12} />
+                  ))}
+              </span>
+              <span>{lineNum}</span>
+            </div>
+          ))}
+        </div>
 
-      {/* Editor textarea */}
-      <textarea
-        ref={textareaRef}
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        onClick={() => {
-          const cursorPos = textareaRef.current?.selectionStart || 0;
-          const textBeforeCursor = code.substring(0, cursorPos);
-          const line = (textBeforeCursor.match(/\n/g) || []).length + 1;
-          const lastNewLine = textBeforeCursor.lastIndexOf("\n");
-          const column =
-            lastNewLine === -1 ? cursorPos + 1 : cursorPos - lastNewLine;
-          setCursorPosition({ line, column });
-        }}
-        className={`w-full h-[calc(100%-3rem)] resize-none outline-none p-4 pl-14 font-mono leading-6 ${
-          theme === "dark"
-            ? "bg-gray-800 text-gray-100 caret-emerald-500"
-            : "bg-white text-gray-900 caret-emerald-600"
-        } transition-colors duration-200`}
-        spellCheck="false"
-        autoCapitalize="off"
-        autoComplete="off"
-        autoCorrect="off"
-      />
+        {/* Code editor area */}
+        <div className="relative flex-grow">
+          {/* Highlighted code */}
+          <div
+            data-theme={theme}
+            dangerouslySetInnerHTML={{ __html: highlightedCode }}
+            className={`absolute top-0 left-0 w-full h-full p-4 pointer-events-none ${
+              theme === "dark" ? "text-gray-100" : "text-gray-900"
+            }`}
+            style={{
+              fontFamily: "inherit",
+              fontSize: "inherit",
+              lineHeight: "24px",
+              tabSize: 2,
+              whiteSpace: "pre",
+              boxSizing: "border-box",
+            }}
+          />
+
+          {/* Input textarea */}
+          <textarea
+            ref={textareaRef}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            onClick={() => {
+              const cursorPos = textareaRef.current?.selectionStart || 0;
+              const textBeforeCursor = code.substring(0, cursorPos);
+              const line = (textBeforeCursor.match(/\n/g) || []).length + 1;
+              const lastNewLine = textBeforeCursor.lastIndexOf("\n");
+              const column =
+                lastNewLine === -1 ? cursorPos + 1 : cursorPos - lastNewLine;
+              setCursorPosition({ line, column });
+            }}
+            className="w-full h-full resize-none outline-none p-4 font-mono leading-6"
+            spellCheck="false"
+            autoCapitalize="off"
+            autoComplete="off"
+            autoCorrect="off"
+            style={{
+              whiteSpace: "pre",
+              tabSize: 2,
+              color: "transparent",
+              caretColor: theme === "dark" ? "#10b981" : "#059669",
+              lineHeight: "24px",
+              background: "transparent",
+              boxSizing: "border-box",
+              position: "relative",
+              zIndex: 1,
+            }}
+          />
+        </div>
+      </div>
 
       {/* Status bar */}
       <div
