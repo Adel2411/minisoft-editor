@@ -1,6 +1,6 @@
 "use client";
 
-import type { CompilationResult, Token, Symbol } from "@/types";
+import type { CompilationResult } from "@/types";
 import { useState } from "react";
 import { Search, Copy, Download } from "lucide-react";
 import ASTViewer from "./results/ASTViewer";
@@ -93,7 +93,7 @@ export default function ResultPanel({
               } else if (activeTab === "symbols") {
                 copyToClipboard(JSON.stringify(result.symbol_table, null, 2));
               } else if (activeTab === "quadruples") {
-                copyToClipboard(result.quadruples.join("\n"));
+                copyToClipboard(JSON.stringify(result.quadruples, null, 2));
               }
             }}
             className={`p-1 rounded-md transition-colors ${
@@ -120,7 +120,10 @@ export default function ResultPanel({
                   "symbols.json",
                 );
               } else if (activeTab === "quadruples") {
-                downloadAsFile(result.quadruples.join("\n"), "quadruples.txt");
+                downloadAsFile(
+                  JSON.stringify(result.quadruples, null, 2),
+                  "quadruples.json",
+                );
               }
             }}
             className={`p-1 rounded-md transition-colors ${
@@ -196,7 +199,7 @@ export default function ResultPanel({
 
       {activeTab === "quadruples" && (
         <QuadruplesViewer
-          quadruples={result.quadruples}
+          program={result.quadruples}
           theme={theme}
           searchTerm={searchTerm}
         />

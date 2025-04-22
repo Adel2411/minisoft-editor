@@ -16,9 +16,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct SerializableCompilationResult {
     pub tokens: Vec<SerializableToken>,
-    pub ast: SerializableProgram, // Changed from string to structured data
+    pub ast: SerializableProgram,
     pub symbol_table: Vec<SerializableSymbol>,
-    pub quadruples: Vec<String>,
+    pub quadruples: SerializableQuadrupleProgram,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -161,22 +161,89 @@ pub enum SerializableLiteral {
     String { value: String },
 }
 
+// Serializable versions of quadruple types
+#[derive(Serialize, Deserialize)]
+#[serde(tag = "type", content = "data")]
+pub enum SerializableOperation {
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+    Assign,
+    ArrayStore,
+    ArrayLoad,
+    Label { id: usize },
+    Jump { target: usize },
+    JumpIfTrue { target: usize },
+    JumpIfFalse { target: usize },
+    Equal,
+    NotEqual,
+    LessThan,
+    GreaterThan,
+    LessEqual,
+    GreaterEqual,
+    And,
+    Or,
+    Not,
+    Input,
+    Output,
+    Call { name: String },
+    Return,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(tag = "type", content = "data")]
+pub enum SerializableOperand {
+    IntLiteral {
+        value: i32,
+    },
+    FloatLiteral {
+        value: f32,
+    },
+    StringLiteral {
+        value: String,
+    },
+    Variable {
+        name: String,
+    },
+    TempVariable {
+        name: String,
+    },
+    ArrayElement {
+        name: String,
+        index: Box<SerializableOperand>,
+    },
+    Empty,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SerializableQuadruple {
+    pub operation: SerializableOperation,
+    pub operand1: SerializableOperand,
+    pub operand2: SerializableOperand,
+    pub result: SerializableOperand,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SerializableQuadrupleProgram {
+    pub quadruples: Vec<SerializableQuadruple>,
+    pub next_temp: usize,
+    pub next_label: usize,
+}
+
 pub fn run_compiler(code: String, verbose: bool) -> Result<SerializableCompilationResult, String> {
-    // 1. dump to a temp file
     let mut tmp = std::env::temp_dir();
     tmp.push("tauri_minisoft_input.ms");
     std::fs::write(&tmp, code.as_bytes())
         .map_err(|e| format!("failed writing temp file: {}", e))?;
     let path = tmp.to_string_lossy().to_string();
 
-    // 2. invoke your Compiler
     match Compiler::new(&path) {
         Ok(mut compiler) => {
             if verbose {
                 println!("Starting compilation in verbose mode");
             }
 
-            // Run the compiler and convert the result to a serializable format
             compiler
                 .run()
                 .map(convert_to_serializable)
@@ -186,7 +253,6 @@ pub fn run_compiler(code: String, verbose: bool) -> Result<SerializableCompilati
     }
 }
 
-// Helper function to convert CompilationResult to SerializableCompilationResult
 fn convert_to_serializable(result: CompilationResult) -> SerializableCompilationResult {
     SerializableCompilationResult {
         tokens: result
@@ -197,7 +263,7 @@ fn convert_to_serializable(result: CompilationResult) -> SerializableCompilation
                 value: t.value,
                 line: t.line,
                 column: t.column,
-                span: (t.span.start, t.span.end), // Convert Range<usize> to tuple (usize, usize)
+                span: (t.span.start, t.span.end),
             })
             .collect(),
 
@@ -216,16 +282,10 @@ fn convert_to_serializable(result: CompilationResult) -> SerializableCompilation
             })
             .collect(),
 
-        quadruples: result
-            .quadruples
-            .quadruples
-            .into_iter()
-            .map(|q| q.to_string())
-            .collect(),
+        quadruples: result.quadruples.into(),
     }
 }
 
-// Implement From traits for AST types to convert them into serializable structures
 impl From<Program> for SerializableProgram {
     fn from(program: Program) -> Self {
         SerializableProgram {
@@ -282,7 +342,6 @@ impl From<Declaration> for SerializableDeclaration {
     }
 }
 
-// Implement similar From traits for Statement, Expression, and Literal
 impl From<Statement> for SerializableStatement {
     fn from(stmt: Statement) -> Self {
         SerializableLocated {
@@ -369,6 +428,77 @@ impl From<Literal> for SerializableLiteral {
             LiteralKind::Int(value) => SerializableLiteral::Int { value },
             LiteralKind::Float(value) => SerializableLiteral::Float { value },
             LiteralKind::String(value) => SerializableLiteral::String { value },
+        }
+    }
+}
+
+impl From<codegen::Operation> for SerializableOperation {
+    fn from(op: codegen::Operation) -> Self {
+        match op {
+            codegen::Operation::Add => SerializableOperation::Add,
+            codegen::Operation::Subtract => SerializableOperation::Subtract,
+            codegen::Operation::Multiply => SerializableOperation::Multiply,
+            codegen::Operation::Divide => SerializableOperation::Divide,
+            codegen::Operation::Assign => SerializableOperation::Assign,
+            codegen::Operation::ArrayStore => SerializableOperation::ArrayStore,
+            codegen::Operation::ArrayLoad => SerializableOperation::ArrayLoad,
+            codegen::Operation::Label(id) => SerializableOperation::Label { id },
+            codegen::Operation::Jump(target) => SerializableOperation::Jump { target },
+            codegen::Operation::JumpIfTrue(target) => SerializableOperation::JumpIfTrue { target },
+            codegen::Operation::JumpIfFalse(target) => {
+                SerializableOperation::JumpIfFalse { target }
+            }
+            codegen::Operation::Equal => SerializableOperation::Equal,
+            codegen::Operation::NotEqual => SerializableOperation::NotEqual,
+            codegen::Operation::LessThan => SerializableOperation::LessThan,
+            codegen::Operation::GreaterThan => SerializableOperation::GreaterThan,
+            codegen::Operation::LessEqual => SerializableOperation::LessEqual,
+            codegen::Operation::GreaterEqual => SerializableOperation::GreaterEqual,
+            codegen::Operation::And => SerializableOperation::And,
+            codegen::Operation::Or => SerializableOperation::Or,
+            codegen::Operation::Not => SerializableOperation::Not,
+            codegen::Operation::Input => SerializableOperation::Input,
+            codegen::Operation::Output => SerializableOperation::Output,
+            codegen::Operation::Call(name) => SerializableOperation::Call { name },
+            codegen::Operation::Return => SerializableOperation::Return,
+        }
+    }
+}
+
+impl From<codegen::Operand> for SerializableOperand {
+    fn from(op: codegen::Operand) -> Self {
+        match op {
+            codegen::Operand::IntLiteral(value) => SerializableOperand::IntLiteral { value },
+            codegen::Operand::FloatLiteral(value) => SerializableOperand::FloatLiteral { value },
+            codegen::Operand::StringLiteral(value) => SerializableOperand::StringLiteral { value },
+            codegen::Operand::Variable(name) => SerializableOperand::Variable { name },
+            codegen::Operand::TempVariable(name) => SerializableOperand::TempVariable { name },
+            codegen::Operand::ArrayElement(name, index) => SerializableOperand::ArrayElement {
+                name,
+                index: Box::new((*index).into()),
+            },
+            codegen::Operand::Empty => SerializableOperand::Empty,
+        }
+    }
+}
+
+impl From<codegen::Quadruple> for SerializableQuadruple {
+    fn from(q: codegen::Quadruple) -> Self {
+        SerializableQuadruple {
+            operation: q.operation.into(),
+            operand1: q.operand1.into(),
+            operand2: q.operand2.into(),
+            result: q.result.into(),
+        }
+    }
+}
+
+impl From<codegen::QuadrupleProgram> for SerializableQuadrupleProgram {
+    fn from(program: codegen::QuadrupleProgram) -> Self {
+        SerializableQuadrupleProgram {
+            quadruples: program.quadruples.into_iter().map(Into::into).collect(),
+            next_temp: program.next_temp,
+            next_label: program.next_label,
         }
     }
 }

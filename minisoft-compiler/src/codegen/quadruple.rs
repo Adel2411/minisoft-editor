@@ -8,18 +8,18 @@ pub enum Operation {
     Subtract,
     Multiply,
     Divide,
-    
+
     // Assignment and memory operations
     Assign,
     ArrayStore,
     ArrayLoad,
-    
+
     // Control flow operations
     Label(usize),
     Jump(usize),
     JumpIfTrue(usize),
     JumpIfFalse(usize),
-    
+
     // Comparison operations
     Equal,
     NotEqual,
@@ -27,16 +27,16 @@ pub enum Operation {
     GreaterThan,
     LessEqual,
     GreaterEqual,
-    
+
     // Logical operations
     And,
     Or,
     Not,
-    
+
     // I/O operations
     Input,
     Output,
-    
+
     // Function operations
     Call(String),
     Return,
@@ -48,8 +48,8 @@ pub enum Operand {
     IntLiteral(i32),
     FloatLiteral(f32),
     StringLiteral(String),
-    Variable(String),            // Simple variable
-    TempVariable(String),        // Compiler-generated temporary
+    Variable(String),                   // Simple variable
+    TempVariable(String),               // Compiler-generated temporary
     ArrayElement(String, Box<Operand>), // Array with index
     Empty,
 }
@@ -80,24 +80,30 @@ impl QuadrupleProgram {
             next_label: 1,
         }
     }
-    
+
     /// Add a quadruple to the program
     pub fn add(&mut self, quad: Quadruple) {
         self.quadruples.push(quad);
     }
-    
+
     /// Generate a new temporary variable name
     pub fn new_temp(&mut self) -> Operand {
         let temp = format!("t{}", self.next_temp);
         self.next_temp += 1;
         Operand::TempVariable(temp)
     }
-    
+
     /// Generate a new label identifier
     pub fn new_label(&mut self) -> usize {
         let label = self.next_label;
         self.next_label += 1;
         label
+    }
+}
+
+impl Default for QuadrupleProgram {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -148,7 +154,10 @@ impl fmt::Display for Operand {
 
 impl fmt::Display for Quadruple {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "({}, {}, {}, {})", 
-               self.operation, self.operand1, self.operand2, self.result)
+        write!(
+            f,
+            "({}, {}, {}, {})",
+            self.operation, self.operand1, self.operand2, self.result
+        )
     }
 }
