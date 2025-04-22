@@ -169,7 +169,7 @@ impl ErrorReporter for LexicalError {
 }
 
 impl LexicalError {
-    fn get_error_description(&self) -> String {
+    pub fn get_error_description(&self) -> String {
         match self.error_type {
             LexicalErrorType::UnterminatedString => format!(
                 "Unterminated string '{}' - missing closing quote",

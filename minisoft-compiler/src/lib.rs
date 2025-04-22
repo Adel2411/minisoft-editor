@@ -5,8 +5,7 @@ pub mod lexer;
 pub mod parser;
 pub mod semantics;
 
-use crate::compiler::Compiler;
-use lexer::error::LexicalErrorType;
+use error_reporter::ErrorReporter;
 use parser::ast::{
     Declaration, DeclarationKind, Expression, ExpressionKind, Literal, LiteralKind, Program,
     Statement, StatementKind,
@@ -354,204 +353,338 @@ pub struct SerializableCompilationErrors {
 }
 
 pub fn run_compiler(code: String, verbose: bool) -> Result<SerializableCompilationResult, String> {
-    let mut tmp = std::env::temp_dir();
-    tmp.push("tauri_minisoft_input.ms");
-    std::fs::write(&tmp, code.as_bytes())
-        .map_err(|e| format!("failed writing temp file: {}", e))?;
-    let path = tmp.to_string_lossy().to_string();
 
     if verbose {
         println!("Starting compilation in verbose mode");
     }
 
-    match Compiler::new(&path) {
-        Ok(mut compiler) => {
-            match compiler.run() {
-                Ok(result) => {
-                    // Successful compilation
-                    Ok(SerializableCompilationResult {
-                        tokens: result
-                            .tokens
-                            .into_iter()
-                            .map(|t| SerializableToken {
-                                kind: format!("{:?}", t.kind),
-                                value: t.value,
-                                line: t.line,
-                                column: t.column,
-                                span: (t.span.start, t.span.end),
-                            })
-                            .collect(),
-                        ast: result.ast.into(),
-                        symbol_table: result
-                            .symbol_table
-                            .into_iter()
-                            .map(|s| SerializableSymbol {
-                                name: s.name,
-                                kind: format!("{:?}", s.kind),
-                                symbol_type: s.symbol_type.to_string(),
-                                value: format!("{:?}", s.value),
-                                line: s.line,
-                                column: s.column,
-                            })
-                            .collect(),
-                        quadruples: result.quadruples.into(),
-                        errors: None, // No errors on success
-                    })
-                }
-                Err(_) => {
-                    // Handle error case by re-running the individual steps to collect errors
-
-                    // Collect lexical errors first
-                    let (tokens, lexical_errors) = crate::lexer::lexer_core::tokenize(&code);
-
-                    let lexical_errors_serialized = lexical_errors
-                        .iter()
-                        .map(|e| SerializableLexicalError {
-                            error_type: match e.error_type {
-                                LexicalErrorType::UnterminatedString => SerializableLexicalErrorType::UnterminatedString,
-                                LexicalErrorType::NonAsciiCharacters => SerializableLexicalErrorType::NonAsciiCharacters,
-                                LexicalErrorType::IdentifierTooLong => SerializableLexicalErrorType::IdentifierTooLong,
-                                LexicalErrorType::InvalidIdentifier => SerializableLexicalErrorType::InvalidIdentifier,
-                                LexicalErrorType::ConsecutiveUnderscores => SerializableLexicalErrorType::ConsecutiveUnderscores,
-                                LexicalErrorType::TrailingUnderscore => SerializableLexicalErrorType::TrailingUnderscore,
-                                LexicalErrorType::IdentifierStartsWithNumber => SerializableLexicalErrorType::IdentifierStartsWithNumber,
-                                LexicalErrorType::IntegerOutOfRange => SerializableLexicalErrorType::IntegerOutOfRange,
-                                LexicalErrorType::SignedNumberNotParenthesized => SerializableLexicalErrorType::SignedNumberNotParenthesized,
-                                LexicalErrorType::InvalidToken => SerializableLexicalErrorType::InvalidToken,
-                            },
-                            invalid_token: e.invalid_token.clone(),
-                            position: SerializableErrorPosition {
-                                line: e.line,
-                                column: e.column,
-                            },
-                            message: format!("Lexical error: {:?}", e.error_type),
-                            suggestion: None,
-                        })
-                        .collect();
-
-                    // If we have lexical errors, return those
-                    if !lexical_errors.is_empty() {
-                        return Ok(SerializableCompilationResult {
-                            tokens: vec![],
-                            ast: SerializableProgram {
-                                name: "".to_string(),
-                                declarations: vec![],
-                                statements: vec![],
-                            },
-                            symbol_table: vec![],
-                            quadruples: SerializableQuadrupleProgram {
-                                quadruples: vec![],
-                                next_temp: 0,
-                                next_label: 0,
-                            },
-                            errors: Some(SerializableCompilationErrors {
-                                lexical_errors: lexical_errors_serialized,
-                                syntax_errors: vec![],
-                                semantic_errors: vec![],
-                            }),
-                        });
-                    }
-
-                    // If no lexical errors, try parsing to collect syntax errors
-                    let syntax_errors =
-                        match crate::parser::parser_core::parse(tokens.clone(), &code) {
-                            Ok(_) => vec![],
-                            Err(e) => vec![SerializableSyntaxError::Custom(e.to_string())],
-                        };
-
-                    // If we have syntax errors, return those
-                    if !syntax_errors.is_empty() {
-                        return Ok(SerializableCompilationResult {
-                            tokens: tokens
-                                .into_iter()
-                                .map(|t| SerializableToken {
-                                    kind: format!("{:?}", t.kind),
-                                    value: t.value,
-                                    line: t.line,
-                                    column: t.column,
-                                    span: (t.span.start, t.span.end),
-                                })
-                                .collect(),
-                            ast: SerializableProgram {
-                                name: "".to_string(),
-                                declarations: vec![],
-                                statements: vec![],
-                            },
-                            symbol_table: vec![],
-                            quadruples: SerializableQuadrupleProgram {
-                                quadruples: vec![],
-                                next_temp: 0,
-                                next_label: 0,
-                            },
-                            errors: Some(SerializableCompilationErrors {
-                                lexical_errors: vec![],
-                                syntax_errors,
-                                semantic_errors: vec![],
-                            }),
-                        });
-                    }
-
-                    // If no syntax errors, try semantic analysis
-                    let ast = crate::parser::parser_core::parse(tokens.clone(), &code).unwrap();
-                    let mut analyzer = crate::semantics::SemanticAnalyzer::new(&code);
-                    analyzer.analyze(&ast);
-
-                    let semantic_errors = analyzer.get_errors();
-                    let semantic_errors_serialized = semantic_errors
-                        .iter()
-                        .map(|_| SerializableSemanticError::EmptyProgram) // Simplification
-                        .collect();
-
-                    // Return with semantic errors
-                    Ok(SerializableCompilationResult {
-                        tokens: tokens
-                            .into_iter()
-                            .map(|t| SerializableToken {
-                                kind: format!("{:?}", t.kind),
-                                value: t.value,
-                                line: t.line,
-                                column: t.column,
-                                span: (t.span.start, t.span.end),
-                            })
-                            .collect(),
-                        ast: ast.into(),
-                        symbol_table: vec![],
-                        quadruples: SerializableQuadrupleProgram {
-                            quadruples: vec![],
-                            next_temp: 0,
-                            next_label: 0,
+    // Step 1: Lexical Analysis
+    let (tokens, lexical_errors) = crate::lexer::lexer_core::tokenize(&code);
+    
+    if !lexical_errors.is_empty() {
+        // Return lexical errors
+        return Ok(SerializableCompilationResult {
+            tokens: tokens
+                .into_iter()
+                .map(|t| SerializableToken {
+                    kind: format!("{:?}", t.kind),
+                    value: t.value,
+                    line: t.line,
+                    column: t.column,
+                    span: (t.span.start, t.span.end),
+                })
+                .collect(),
+            ast: SerializableProgram {
+                name: "".to_string(),
+                declarations: vec![],
+                statements: vec![],
+            },
+            symbol_table: vec![],
+            quadruples: SerializableQuadrupleProgram {
+                quadruples: vec![],
+                next_temp: 0,
+                next_label: 0,
+            },
+            errors: Some(SerializableCompilationErrors {
+                lexical_errors: lexical_errors
+                    .iter()
+                    .map(|e| SerializableLexicalError {
+                        error_type: convert_lexical_error_type(&e.error_type),
+                        invalid_token: e.invalid_token.clone(),
+                        position: SerializableErrorPosition {
+                            line: e.line,
+                            column: e.column,
                         },
-                        errors: Some(SerializableCompilationErrors {
-                            lexical_errors: vec![],
-                            syntax_errors: vec![],
-                            semantic_errors: semantic_errors_serialized,
-                        }),
+                        message: e.get_error_description(),
+                        suggestion: e.get_suggestion(),
                     })
-                }
+                    .collect(),
+                syntax_errors: vec![],
+                semantic_errors: vec![],
+            }),
+        });
+    }
+
+    // Step 2: Syntax Analysis
+    let ast_result = crate::parser::parser_core::parse(tokens.clone(), &code);
+    
+    if let Err(syntax_error) = &ast_result {
+        // Return syntax error
+        return Ok(SerializableCompilationResult {
+            tokens: tokens
+                .into_iter()
+                .map(|t| SerializableToken {
+                    kind: format!("{:?}", t.kind),
+                    value: t.value,
+                    line: t.line,
+                    column: t.column,
+                    span: (t.span.start, t.span.end),
+                })
+                .collect(),
+            ast: SerializableProgram {
+                name: "".to_string(),
+                declarations: vec![],
+                statements: vec![],
+            },
+            symbol_table: vec![],
+            quadruples: SerializableQuadrupleProgram {
+                quadruples: vec![],
+                next_temp: 0,
+                next_label: 0,
+            },
+            errors: Some(SerializableCompilationErrors {
+                lexical_errors: vec![],
+                syntax_errors: vec![convert_syntax_error(syntax_error)],
+                semantic_errors: vec![],
+            }),
+        });
+    }
+
+    // Step 3: Semantic Analysis
+    let ast = ast_result.unwrap();
+    let mut analyzer = crate::semantics::SemanticAnalyzer::new(&code);
+    analyzer.analyze(&ast);
+    let semantic_errors = analyzer.get_errors();
+
+    if !semantic_errors.is_empty() {
+        // Return semantic errors
+        return Ok(SerializableCompilationResult {
+            tokens: tokens
+                .into_iter()
+                .map(|t| SerializableToken {
+                    kind: format!("{:?}", t.kind),
+                    value: t.value,
+                    line: t.line,
+                    column: t.column,
+                    span: (t.span.start, t.span.end),
+                })
+                .collect(),
+            ast: ast.into(),
+            symbol_table: analyzer
+                .get_symbol_table()
+                .get_all()
+                .iter()
+                .map(|s| SerializableSymbol {
+                    name: s.name.clone(),
+                    kind: format!("{:?}", s.kind),
+                    symbol_type: s.symbol_type.to_string(),
+                    value: format!("{:?}", s.value),
+                    line: s.line,
+                    column: s.column,
+                })
+                .collect(),
+            quadruples: SerializableQuadrupleProgram {
+                quadruples: vec![],
+                next_temp: 0,
+                next_label: 0,
+            },
+            errors: Some(SerializableCompilationErrors {
+                lexical_errors: vec![],
+                syntax_errors: vec![],
+                semantic_errors: semantic_errors
+                    .iter()
+                    .map(|e| convert_semantic_error(e))
+                    .collect(),
+            }),
+        });
+    }
+
+    // If we reach here, no errors were found - proceed with code generation
+    let mut code_generator = crate::codegen::generator::CodeGenerator::new();
+    let quadruples = match code_generator.generate_code(&ast) {
+        Some(quads) => quads,
+        None => return Err("Code generation failed".to_string()),
+    };
+
+    // All successful - return the complete compilation result
+    Ok(SerializableCompilationResult {
+        tokens: tokens
+            .into_iter()
+            .map(|t| SerializableToken {
+                kind: format!("{:?}", t.kind),
+                value: t.value,
+                line: t.line,
+                column: t.column,
+                span: (t.span.start, t.span.end),
+            })
+            .collect(),
+        ast: ast.into(),
+        symbol_table: analyzer
+            .get_symbol_table()
+            .get_all()
+            .iter()
+            .map(|s| SerializableSymbol {
+                name: s.name.clone(),
+                kind: format!("{:?}", s.kind),
+                symbol_type: s.symbol_type.to_string(),
+                value: format!("{:?}", s.value),
+                line: s.line,
+                column: s.column,
+            })
+            .collect(),
+        quadruples: quadruples.into(),
+        errors: None, // No errors on success
+    })
+}
+
+// Helper function to convert lexical error types
+fn convert_lexical_error_type(err_type: &crate::lexer::error::LexicalErrorType) -> SerializableLexicalErrorType {
+    match err_type {
+        crate::lexer::error::LexicalErrorType::UnterminatedString => SerializableLexicalErrorType::UnterminatedString,
+        crate::lexer::error::LexicalErrorType::NonAsciiCharacters => SerializableLexicalErrorType::NonAsciiCharacters,
+        crate::lexer::error::LexicalErrorType::IdentifierTooLong => SerializableLexicalErrorType::IdentifierTooLong,
+        crate::lexer::error::LexicalErrorType::InvalidIdentifier => SerializableLexicalErrorType::InvalidIdentifier,
+        crate::lexer::error::LexicalErrorType::ConsecutiveUnderscores => SerializableLexicalErrorType::ConsecutiveUnderscores,
+        crate::lexer::error::LexicalErrorType::TrailingUnderscore => SerializableLexicalErrorType::TrailingUnderscore,
+        crate::lexer::error::LexicalErrorType::IdentifierStartsWithNumber => SerializableLexicalErrorType::IdentifierStartsWithNumber,
+        crate::lexer::error::LexicalErrorType::IntegerOutOfRange => SerializableLexicalErrorType::IntegerOutOfRange,
+        crate::lexer::error::LexicalErrorType::SignedNumberNotParenthesized => SerializableLexicalErrorType::SignedNumberNotParenthesized,
+        crate::lexer::error::LexicalErrorType::InvalidToken => SerializableLexicalErrorType::InvalidToken,
+    }
+}
+
+// Helper function to convert syntax errors
+fn convert_syntax_error(err: &crate::parser::error::SyntaxError) -> SerializableSyntaxError {
+    match err {
+        crate::parser::error::SyntaxError::InvalidToken { position, message, line, column, .. } => {
+            SerializableSyntaxError::InvalidToken {
+                position: *position,
+                message: message.clone(),
+                line: *line,
+                column: *column,
             }
         }
-        Err(_) => {
-            // Compiler initialization failed
-            Ok(SerializableCompilationResult {
-                tokens: vec![],
-                ast: SerializableProgram {
-                    name: "".to_string(),
-                    declarations: vec![],
-                    statements: vec![],
-                },
-                symbol_table: vec![],
-                quadruples: SerializableQuadrupleProgram {
-                    quadruples: vec![],
-                    next_temp: 0,
-                    next_label: 0,
-                },
-                errors: Some(SerializableCompilationErrors {
-                    lexical_errors: vec![],
-                    syntax_errors: vec![],
-                    semantic_errors: vec![SerializableSemanticError::EmptyProgram],
-                }),
-            })
+        crate::parser::error::SyntaxError::UnexpectedEOF { position, expected, line, column } => {
+            SerializableSyntaxError::UnexpectedEOF {
+                position: *position,
+                expected: expected.clone(),
+                line: *line,
+                column: *column,
+            }
         }
+        crate::parser::error::SyntaxError::UnexpectedToken { token, line, column, expected, .. } => {
+            SerializableSyntaxError::UnexpectedToken {
+                token: token.clone(),
+                expected: expected.clone(),
+                line: *line,
+                column: *column,
+            }
+        }
+        crate::parser::error::SyntaxError::ExtraToken { token, line, column, .. } => {
+            SerializableSyntaxError::ExtraToken {
+                token: token.clone(),
+                line: *line,
+                column: *column,
+            }
+        }
+        crate::parser::error::SyntaxError::Custom(msg) => SerializableSyntaxError::Custom(msg.clone()),
+    }
+}
+
+// Helper function to convert semantic errors
+fn convert_semantic_error(err: &crate::semantics::error::SemanticError) -> SerializableSemanticError {
+    match err {
+        crate::semantics::error::SemanticError::ArraySizeMismatch { name, expected, actual, line, column } => {
+            SerializableSemanticError::ArraySizeMismatch {
+                name: name.clone(),
+                expected: *expected,
+                actual: *actual,
+                position: SerializableErrorPosition {
+                    line: *line,
+                    column: *column,
+                },
+            }
+        }
+        crate::semantics::error::SemanticError::UndeclaredIdentifier { name, line, column } => {
+            SerializableSemanticError::UndeclaredIdentifier {
+                name: name.clone(),
+                position: SerializableErrorPosition {
+                    line: *line,
+                    column: *column,
+                },
+            }
+        }
+        crate::semantics::error::SemanticError::DuplicateDeclaration { name, line, column, original_line, original_column } => {
+            SerializableSemanticError::DuplicateDeclaration {
+                name: name.clone(),
+                position: SerializableErrorPosition {
+                    line: *line,
+                    column: *column,
+                },
+                original_position: SerializableErrorPosition {
+                    line: *original_line,
+                    column: *original_column,
+                },
+            }
+        }
+        crate::semantics::error::SemanticError::TypeMismatch { expected, found, line, column, context } => {
+            SerializableSemanticError::TypeMismatch {
+                expected: expected.clone(),
+                found: found.clone(),
+                position: SerializableErrorPosition {
+                    line: *line,
+                    column: *column,
+                },
+                context: context.clone(),
+            }
+        }
+        crate::semantics::error::SemanticError::DivisionByZero { line, column } => {
+            SerializableSemanticError::DivisionByZero {
+                position: SerializableErrorPosition {
+                    line: *line,
+                    column: *column,
+                },
+            }
+        }
+        crate::semantics::error::SemanticError::ConstantModification { name, line, column } => {
+            SerializableSemanticError::ConstantModification {
+                name: name.clone(),
+                position: SerializableErrorPosition {
+                    line: *line,
+                    column: *column,
+                },
+            }
+        }
+        crate::semantics::error::SemanticError::ArrayIndexOutOfBounds { name, index, size, line, column } => {
+            SerializableSemanticError::ArrayIndexOutOfBounds {
+                name: name.clone(),
+                index: *index,
+                size: *size,
+                position: SerializableErrorPosition {
+                    line: *line,
+                    column: *column,
+                },
+            }
+        }
+        crate::semantics::error::SemanticError::InvalidConditionValue { found, line, column } => {
+            SerializableSemanticError::InvalidConditionValue {
+                found: found.clone(),
+                position: SerializableErrorPosition {
+                    line: *line,
+                    column: *column,
+                },
+            }
+        }
+        crate::semantics::error::SemanticError::NonArrayIndexing { var_name, line, column } => {
+            SerializableSemanticError::NonArrayIndexing {
+                var_name: var_name.clone(),
+                position: SerializableErrorPosition {
+                    line: *line,
+                    column: *column,
+                },
+            }
+        }
+        crate::semantics::error::SemanticError::InvalidArraySize { name, size, line, column } => {
+            SerializableSemanticError::InvalidArraySize {
+                name: name.clone(),
+                size: *size,
+                position: SerializableErrorPosition {
+                    line: *line,
+                    column: *column,
+                },
+            }
+        }
+        crate::semantics::error::SemanticError::EmptyProgram => SerializableSemanticError::EmptyProgram,
     }
 }
 

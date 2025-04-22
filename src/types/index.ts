@@ -158,20 +158,8 @@ export interface ErrorPosition {
 }
 
 // Lexical errors
-export type LexicalErrorType =
-  | { type: "UnterminatedString" }
-  | { type: "NonAsciiCharacters" }
-  | { type: "IdentifierTooLong" }
-  | { type: "InvalidIdentifier" }
-  | { type: "ConsecutiveUnderscores" }
-  | { type: "TrailingUnderscore" }
-  | { type: "IdentifierStartsWithNumber" }
-  | { type: "IntegerOutOfRange" }
-  | { type: "SignedNumberNotParenthesized" }
-  | { type: "InvalidToken" };
-
 export interface LexicalError {
-  error_type: LexicalErrorType;
+  error_type: { type: string };
   invalid_token: string;
   position: ErrorPosition;
   message: string;
