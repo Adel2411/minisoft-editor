@@ -64,8 +64,9 @@ export type StatementKind =
   | {
       kind: "For";
       data: {
-        init: Expression;
-        condition: Expression;
+        var: Expression;
+        from: Expression;
+        to: Expression;
         step: Expression;
         body: Statement[];
       };

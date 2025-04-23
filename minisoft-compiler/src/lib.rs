@@ -108,8 +108,9 @@ pub enum SerializableStatementKind {
         condition: SerializableExpression,
     },
     For {
-        init: SerializableExpression,
-        condition: SerializableExpression,
+        var: SerializableExpression,
+        from: SerializableExpression,
+        to: SerializableExpression,
         step: SerializableExpression,
         body: Vec<SerializableStatement>,
     },
@@ -357,73 +358,117 @@ pub fn run_compiler(code: String, verbose: bool) -> Result<SerializableCompilati
 }
 
 // Helper function to convert lexical error types
-fn convert_lexical_error_type(err_type: &crate::lexer::error::LexicalErrorType) -> SerializableLexicalErrorType {
+fn convert_lexical_error_type(
+    err_type: &crate::lexer::error::LexicalErrorType,
+) -> SerializableLexicalErrorType {
     match err_type {
-        crate::lexer::error::LexicalErrorType::UnterminatedString => SerializableLexicalErrorType::UnterminatedString,
-        crate::lexer::error::LexicalErrorType::NonAsciiCharacters => SerializableLexicalErrorType::NonAsciiCharacters,
-        crate::lexer::error::LexicalErrorType::IdentifierTooLong => SerializableLexicalErrorType::IdentifierTooLong,
-        crate::lexer::error::LexicalErrorType::InvalidIdentifier => SerializableLexicalErrorType::InvalidIdentifier,
-        crate::lexer::error::LexicalErrorType::ConsecutiveUnderscores => SerializableLexicalErrorType::ConsecutiveUnderscores,
-        crate::lexer::error::LexicalErrorType::TrailingUnderscore => SerializableLexicalErrorType::TrailingUnderscore,
-        crate::lexer::error::LexicalErrorType::IdentifierStartsWithNumber => SerializableLexicalErrorType::IdentifierStartsWithNumber,
-        crate::lexer::error::LexicalErrorType::IntegerOutOfRange => SerializableLexicalErrorType::IntegerOutOfRange,
-        crate::lexer::error::LexicalErrorType::SignedNumberNotParenthesized => SerializableLexicalErrorType::SignedNumberNotParenthesized,
-        crate::lexer::error::LexicalErrorType::InvalidToken => SerializableLexicalErrorType::InvalidToken,
+        crate::lexer::error::LexicalErrorType::UnterminatedString => {
+            SerializableLexicalErrorType::UnterminatedString
+        }
+        crate::lexer::error::LexicalErrorType::NonAsciiCharacters => {
+            SerializableLexicalErrorType::NonAsciiCharacters
+        }
+        crate::lexer::error::LexicalErrorType::IdentifierTooLong => {
+            SerializableLexicalErrorType::IdentifierTooLong
+        }
+        crate::lexer::error::LexicalErrorType::InvalidIdentifier => {
+            SerializableLexicalErrorType::InvalidIdentifier
+        }
+        crate::lexer::error::LexicalErrorType::ConsecutiveUnderscores => {
+            SerializableLexicalErrorType::ConsecutiveUnderscores
+        }
+        crate::lexer::error::LexicalErrorType::TrailingUnderscore => {
+            SerializableLexicalErrorType::TrailingUnderscore
+        }
+        crate::lexer::error::LexicalErrorType::IdentifierStartsWithNumber => {
+            SerializableLexicalErrorType::IdentifierStartsWithNumber
+        }
+        crate::lexer::error::LexicalErrorType::IntegerOutOfRange => {
+            SerializableLexicalErrorType::IntegerOutOfRange
+        }
+        crate::lexer::error::LexicalErrorType::SignedNumberNotParenthesized => {
+            SerializableLexicalErrorType::SignedNumberNotParenthesized
+        }
+        crate::lexer::error::LexicalErrorType::InvalidToken => {
+            SerializableLexicalErrorType::InvalidToken
+        }
     }
 }
 
 // Helper function to convert syntax errors
 fn convert_syntax_error(err: &crate::parser::error::SyntaxError) -> SerializableSyntaxError {
     match err {
-        crate::parser::error::SyntaxError::InvalidToken { position, message, line, column, .. } => {
-            SerializableSyntaxError::InvalidToken {
-                position: *position,
-                message: message.clone(),
-                line: *line,
-                column: *column,
-            }
+        crate::parser::error::SyntaxError::InvalidToken {
+            position,
+            message,
+            line,
+            column,
+            ..
+        } => SerializableSyntaxError::InvalidToken {
+            position: *position,
+            message: message.clone(),
+            line: *line,
+            column: *column,
+        },
+        crate::parser::error::SyntaxError::UnexpectedEOF {
+            position,
+            expected,
+            line,
+            column,
+        } => SerializableSyntaxError::UnexpectedEOF {
+            position: *position,
+            expected: expected.clone(),
+            line: *line,
+            column: *column,
+        },
+        crate::parser::error::SyntaxError::UnexpectedToken {
+            token,
+            line,
+            column,
+            expected,
+            ..
+        } => SerializableSyntaxError::UnexpectedToken {
+            token: token.clone(),
+            expected: expected.clone(),
+            line: *line,
+            column: *column,
+        },
+        crate::parser::error::SyntaxError::ExtraToken {
+            token,
+            line,
+            column,
+            ..
+        } => SerializableSyntaxError::ExtraToken {
+            token: token.clone(),
+            line: *line,
+            column: *column,
+        },
+        crate::parser::error::SyntaxError::Custom(msg) => {
+            SerializableSyntaxError::Custom(msg.clone())
         }
-        crate::parser::error::SyntaxError::UnexpectedEOF { position, expected, line, column } => {
-            SerializableSyntaxError::UnexpectedEOF {
-                position: *position,
-                expected: expected.clone(),
-                line: *line,
-                column: *column,
-            }
-        }
-        crate::parser::error::SyntaxError::UnexpectedToken { token, line, column, expected, .. } => {
-            SerializableSyntaxError::UnexpectedToken {
-                token: token.clone(),
-                expected: expected.clone(),
-                line: *line,
-                column: *column,
-            }
-        }
-        crate::parser::error::SyntaxError::ExtraToken { token, line, column, .. } => {
-            SerializableSyntaxError::ExtraToken {
-                token: token.clone(),
-                line: *line,
-                column: *column,
-            }
-        }
-        crate::parser::error::SyntaxError::Custom(msg) => SerializableSyntaxError::Custom(msg.clone()),
     }
 }
 
 // Helper function to convert semantic errors
-fn convert_semantic_error(err: &crate::semantics::error::SemanticError) -> SerializableSemanticError {
+fn convert_semantic_error(
+    err: &crate::semantics::error::SemanticError,
+) -> SerializableSemanticError {
     match err {
-        crate::semantics::error::SemanticError::ArraySizeMismatch { name, expected, actual, line, column } => {
-            SerializableSemanticError::ArraySizeMismatch {
-                name: name.clone(),
-                expected: *expected,
-                actual: *actual,
-                position: SerializableErrorPosition {
-                    line: *line,
-                    column: *column,
-                },
-            }
-        }
+        crate::semantics::error::SemanticError::ArraySizeMismatch {
+            name,
+            expected,
+            actual,
+            line,
+            column,
+        } => SerializableSemanticError::ArraySizeMismatch {
+            name: name.clone(),
+            expected: *expected,
+            actual: *actual,
+            position: SerializableErrorPosition {
+                line: *line,
+                column: *column,
+            },
+        },
         crate::semantics::error::SemanticError::UndeclaredIdentifier { name, line, column } => {
             SerializableSemanticError::UndeclaredIdentifier {
                 name: name.clone(),
@@ -433,30 +478,38 @@ fn convert_semantic_error(err: &crate::semantics::error::SemanticError) -> Seria
                 },
             }
         }
-        crate::semantics::error::SemanticError::DuplicateDeclaration { name, line, column, original_line, original_column } => {
-            SerializableSemanticError::DuplicateDeclaration {
-                name: name.clone(),
-                position: SerializableErrorPosition {
-                    line: *line,
-                    column: *column,
-                },
-                original_position: SerializableErrorPosition {
-                    line: *original_line,
-                    column: *original_column,
-                },
-            }
-        }
-        crate::semantics::error::SemanticError::TypeMismatch { expected, found, line, column, context } => {
-            SerializableSemanticError::TypeMismatch {
-                expected: expected.clone(),
-                found: found.clone(),
-                position: SerializableErrorPosition {
-                    line: *line,
-                    column: *column,
-                },
-                context: context.clone(),
-            }
-        }
+        crate::semantics::error::SemanticError::DuplicateDeclaration {
+            name,
+            line,
+            column,
+            original_line,
+            original_column,
+        } => SerializableSemanticError::DuplicateDeclaration {
+            name: name.clone(),
+            position: SerializableErrorPosition {
+                line: *line,
+                column: *column,
+            },
+            original_position: SerializableErrorPosition {
+                line: *original_line,
+                column: *original_column,
+            },
+        },
+        crate::semantics::error::SemanticError::TypeMismatch {
+            expected,
+            found,
+            line,
+            column,
+            context,
+        } => SerializableSemanticError::TypeMismatch {
+            expected: expected.clone(),
+            found: found.clone(),
+            position: SerializableErrorPosition {
+                line: *line,
+                column: *column,
+            },
+            context: context.clone(),
+        },
         crate::semantics::error::SemanticError::DivisionByZero { line, column } => {
             SerializableSemanticError::DivisionByZero {
                 position: SerializableErrorPosition {
@@ -474,46 +527,59 @@ fn convert_semantic_error(err: &crate::semantics::error::SemanticError) -> Seria
                 },
             }
         }
-        crate::semantics::error::SemanticError::ArrayIndexOutOfBounds { name, index, size, line, column } => {
-            SerializableSemanticError::ArrayIndexOutOfBounds {
-                name: name.clone(),
-                index: *index,
-                size: *size,
-                position: SerializableErrorPosition {
-                    line: *line,
-                    column: *column,
-                },
-            }
+        crate::semantics::error::SemanticError::ArrayIndexOutOfBounds {
+            name,
+            index,
+            size,
+            line,
+            column,
+        } => SerializableSemanticError::ArrayIndexOutOfBounds {
+            name: name.clone(),
+            index: *index,
+            size: *size,
+            position: SerializableErrorPosition {
+                line: *line,
+                column: *column,
+            },
+        },
+        crate::semantics::error::SemanticError::InvalidConditionValue {
+            found,
+            line,
+            column,
+        } => SerializableSemanticError::InvalidConditionValue {
+            found: found.clone(),
+            position: SerializableErrorPosition {
+                line: *line,
+                column: *column,
+            },
+        },
+        crate::semantics::error::SemanticError::NonArrayIndexing {
+            var_name,
+            line,
+            column,
+        } => SerializableSemanticError::NonArrayIndexing {
+            var_name: var_name.clone(),
+            position: SerializableErrorPosition {
+                line: *line,
+                column: *column,
+            },
+        },
+        crate::semantics::error::SemanticError::InvalidArraySize {
+            name,
+            size,
+            line,
+            column,
+        } => SerializableSemanticError::InvalidArraySize {
+            name: name.clone(),
+            size: *size,
+            position: SerializableErrorPosition {
+                line: *line,
+                column: *column,
+            },
+        },
+        crate::semantics::error::SemanticError::EmptyProgram => {
+            SerializableSemanticError::EmptyProgram
         }
-        crate::semantics::error::SemanticError::InvalidConditionValue { found, line, column } => {
-            SerializableSemanticError::InvalidConditionValue {
-                found: found.clone(),
-                position: SerializableErrorPosition {
-                    line: *line,
-                    column: *column,
-                },
-            }
-        }
-        crate::semantics::error::SemanticError::NonArrayIndexing { var_name, line, column } => {
-            SerializableSemanticError::NonArrayIndexing {
-                var_name: var_name.clone(),
-                position: SerializableErrorPosition {
-                    line: *line,
-                    column: *column,
-                },
-            }
-        }
-        crate::semantics::error::SemanticError::InvalidArraySize { name, size, line, column } => {
-            SerializableSemanticError::InvalidArraySize {
-                name: name.clone(),
-                size: *size,
-                position: SerializableErrorPosition {
-                    line: *line,
-                    column: *column,
-                },
-            }
-        }
-        crate::semantics::error::SemanticError::EmptyProgram => SerializableSemanticError::EmptyProgram,
     }
 }
 
@@ -596,14 +662,13 @@ impl From<Statement> for SerializableStatement {
                     body: body.into_iter().map(Into::into).collect(),
                     condition: condition.into(),
                 },
-                StatementKind::For(init, condition, step, _, body) => {
-                    SerializableStatementKind::For {
-                        init: init.into(),
-                        condition: condition.into(),
-                        step: step.into(),
-                        body: body.into_iter().map(Into::into).collect(),
-                    }
-                }
+                StatementKind::For(var, from, to, step, body) => SerializableStatementKind::For {
+                    var: var.into(),
+                    from: from.into(),
+                    to: to.into(),
+                    step: step.into(),
+                    body: body.into_iter().map(Into::into).collect(),
+                },
                 StatementKind::Input(target) => SerializableStatementKind::Input {
                     target: target.into(),
                 },
