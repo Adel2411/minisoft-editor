@@ -442,34 +442,36 @@ export default function Editor({
   const toggleComment = () => {
     const textarea = textareaRef.current;
     if (!textarea) return;
-
+  
     const selectionStart = textarea.selectionStart;
     const selectionEnd = textarea.selectionEnd;
-
+  
     // Get the selected text
     const selectedText = code.substring(selectionStart, selectionEnd);
-
+  
     // Check if there are multiple lines selected
     if (selectedText.includes('\n')) {
       // Multiple line comment logic
       const lines = selectedText.split('\n');
       const commentedLines = lines.map(line => {
-        if (line.trimStart().startsWith('// ')) {
-          return line.replace(/^\s*\/\/\s?/, '');
+        if (line.trimStart().startsWith('<!-') && line.trimEnd().endsWith('-!>')) {
+          // Remove comments
+          return line.replace(/^\s*<!-\s?/, '').replace(/\s?-!>$/, '');
         } else {
-          return `// ${line}`;
+          // Add comments
+          return `<!- ${line} -!>`;
         }
       });
-
+  
       const newText = commentedLines.join('\n');
       const newCode = code.substring(0, selectionStart) + newText + code.substring(selectionEnd);
-
+  
       // Add to undo stack
       setUndoStack([...undoStack, newCode]);
       setRedoStack([]);
-
+  
       setCode(newCode);
-
+  
       // Restore selection
       setTimeout(() => {
         textarea.setSelectionRange(selectionStart, selectionStart + newText.length);
@@ -479,23 +481,25 @@ export default function Editor({
       const lineStartPos = code.lastIndexOf('\n', selectionStart - 1) + 1;
       const lineEndPos = code.indexOf('\n', selectionStart);
       const line = code.substring(lineStartPos, lineEndPos === -1 ? code.length : lineEndPos);
-
+  
       let newLine;
-      if (line.trimStart().startsWith('// ')) {
-        newLine = line.replace(/^\s*\/\/\s?/, '');
+      if (line.trimStart().startsWith('<!-') && line.trimEnd().endsWith('-!>')) {
+        // Remove comment
+        newLine = line.replace(/^\s*<!-\s?/, '').replace(/\s?-!>$/, '');
       } else {
-        newLine = `// ${line}`;
+        // Add comment
+        newLine = `<!- ${line} -!>`;
       }
-
+  
       const newCode = code.substring(0, lineStartPos) + newLine +
         code.substring(lineEndPos === -1 ? code.length : lineEndPos);
-
+  
       // Add to undo stack
       setUndoStack([...undoStack, newCode]);
       setRedoStack([]);
-
+  
       setCode(newCode);
-
+  
       // Restore cursor position
       setTimeout(() => {
         textarea.setSelectionRange(selectionStart, selectionStart);
