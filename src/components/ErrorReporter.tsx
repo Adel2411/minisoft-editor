@@ -197,6 +197,15 @@ export default function ErrorReporter({
       // Semantic Error
       const semanticError = error as SemanticError;
       switch (semanticError.type) {
+        case "AssignmentToArray":
+          errorDetails = {
+            title: "Assignment to Array",
+            message: `Assignment to array ${semanticError.data.name} without index`,
+            line: semanticError.data.position.line,
+            column: semanticError.data.position.column,
+            suggestion: `Use an index to assign value to array ${semanticError.data.name}`,
+          };
+          break;
         case "EmptyProgram":
           errorDetails = {
             title: "Empty Program",

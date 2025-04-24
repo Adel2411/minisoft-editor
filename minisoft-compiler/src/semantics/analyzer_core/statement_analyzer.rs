@@ -1,41 +1,33 @@
 use crate::parser::ast::{Expression, ExpressionKind, Statement, StatementKind, Type};
 use crate::semantics::analyzer_core::SemanticAnalyzer;
+use crate::semantics::symbol_table::SymbolKind;
 
 impl SemanticAnalyzer {
     pub fn analyze_statement(&mut self, stmt: &Statement) {
         match &stmt.node {
             StatementKind::Assignment(left, right) => {
-                // Handle assignment
                 self.handle_assignment(left, right);
             }
 
             StatementKind::IfThen(condition, then_block) => {
-                // Analyze condition
                 self.handle_condition(condition, Some("if condition"));
-                // Analyze then block
                 self.handle_scope(then_block);
             }
 
             StatementKind::IfThenElse(condition, then_block, else_block) => {
-                // Analyze condition
                 self.handle_condition(condition, Some("if-else condition"));
-                // Analyze then block
                 self.handle_scope(then_block);
-                // Analyze else block
                 self.handle_scope(else_block);
             }
 
             StatementKind::DoWhile(body, condition) => {
-                // Analyze loop body
                 self.handle_scope(body);
-                // Analyze condition
                 self.analyze_expression(condition);
 
                 self.handle_condition(condition, Some("do-while condition"));
             }
 
             StatementKind::For(iterator, init, end, step, body) => {
-                // Analyze for loop
                 self.handle_forloop(iterator, init, end, step, body);
             }
 
@@ -48,7 +40,6 @@ impl SemanticAnalyzer {
             }
 
             StatementKind::Scope(statements) => {
-                // Analyze all statements in the block
                 self.handle_scope(statements);
             }
 
@@ -59,31 +50,37 @@ impl SemanticAnalyzer {
     }
 
     fn handle_assignment(&mut self, left_expression: &Expression, right_expression: &Expression) {
-        if let ExpressionKind::Identifier(_) | ExpressionKind::ArrayAccess(_, _) =
-            &left_expression.node
-        {
-            // Check if left side is assignable
-            if let ExpressionKind::Identifier(name) = &left_expression.node {
-                if let Some(symbol) = self.symbol_table.get(name) {
-                    if symbol.is_constant {
-                        self.constant_modification_error(&left_expression.span, name);
-                    }
+        if let ExpressionKind::Identifier(name) = &left_expression.node {
+            // Extract the symbol first to end the immutable borrow
+            let symbol = self.symbol_table.get(name).cloned();
+
+            if let Some(symbol) = symbol {
+                if symbol.is_constant {
+                    self.constant_modification_error(&left_expression.span, name);
+                }
+
+                // Check for direct assignment to array
+                if let SymbolKind::Array(_) = symbol.kind {
+                    self.assignement_to_array_error(&left_expression.span, name);
                 }
             }
+        }
 
-            // Analyze both sides of the assignment
-            let left_type = self.analyze_expression(left_expression);
-            let right_type = self.analyze_expression(right_expression);
+        // Analyze both sides of the assignment
+        let left_type = self.analyze_expression(left_expression);
+        let right_type = self.analyze_expression(right_expression);
 
-            if let (Some(left_type), Some(right_type)) = (left_type, right_type) {
-                if !right_type.get_type().is_compatible_with(&left_type.get_type()) {
-                    self.type_mismatch_error(
-                        &left_expression.span,
-                        &left_type.get_type(),
-                        &right_type.get_type(),
-                        Some("assignment"),
-                    );
-                }
+        if let (Some(left_type), Some(right_type)) = (left_type, right_type) {
+            if !right_type
+                .get_type()
+                .is_compatible_with(left_type.get_type())
+            {
+                self.type_mismatch_error(
+                    &left_expression.span,
+                    left_type.get_type(),
+                    right_type.get_type(),
+                    Some("assignment"),
+                );
             }
         }
     }
@@ -95,7 +92,12 @@ impl SemanticAnalyzer {
         // Ensure the condition is boolean
         if let Some(cond_type) = condition_type {
             if cond_type != Type::Int {
-                self.type_mismatch_error(&condition.span, &Type::Int, &cond_type.get_type(), context);
+                self.type_mismatch_error(
+                    &condition.span,
+                    &Type::Int,
+                    cond_type.get_type(),
+                    context,
+                );
             }
         }
     }
@@ -121,7 +123,7 @@ impl SemanticAnalyzer {
                 self.type_mismatch_error(
                     &iterator.span,
                     &Type::Int,
-                    &iterator_type.get_type(),
+                    iterator_type.get_type(),
                     Some("for loop iterator"),
                 );
             }
@@ -134,7 +136,7 @@ impl SemanticAnalyzer {
                 self.type_mismatch_error(
                     &init.span,
                     &Type::Int,
-                    &init_type.get_type(),
+                    init_type.get_type(),
                     Some("for loop initialization"),
                 );
             }
@@ -146,7 +148,7 @@ impl SemanticAnalyzer {
                 self.type_mismatch_error(
                     &end.span,
                     &Type::Int,
-                    &end_type.get_type(),
+                    end_type.get_type(),
                     Some("for loop end condition"),
                 );
             }
@@ -158,7 +160,7 @@ impl SemanticAnalyzer {
                 self.type_mismatch_error(
                     &step.span,
                     &Type::Int,
-                    &step_type.get_type(),
+                    step_type.get_type(),
                     Some("for loop step"),
                 );
             }

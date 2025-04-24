@@ -209,6 +209,13 @@ export type SyntaxError =
 // Semantic errors
 export type SemanticError =
   | {
+      type: "AssignmentToArray";
+      data: {
+        name: string;
+        position: ErrorPosition;
+      };
+    }
+  | {
       type: "ArraySizeMismatch";
       data: {
         name: string;

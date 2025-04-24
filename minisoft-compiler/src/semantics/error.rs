@@ -5,6 +5,13 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum SemanticError {
+    /// Assignment to an array without accessing a specific index
+    AssignmentToArray {
+        name: String,
+        line: usize,
+        column: usize,
+    },
+
     /// Array size and declaration mismatch
     ArraySizeMismatch {
         name: String,
@@ -135,6 +142,9 @@ impl ErrorReporter for SemanticError {
 
     fn get_suggestion(&self) -> Option<String> {
         match self {
+            SemanticError::AssignmentToArray { name, .. } => {
+                Some(format!("Use an index to assign value to array '{}'", name))
+            }
             SemanticError::ArraySizeMismatch {
                 name,
                 expected,
@@ -207,6 +217,7 @@ impl ErrorReporter for SemanticError {
 
     fn get_location_info(&self) -> (usize, usize) {
         match self {
+            SemanticError::AssignmentToArray { line, column, .. } => (*line, *column),
             SemanticError::ArraySizeMismatch { line, column, .. } => (*line, *column),
             SemanticError::UndeclaredIdentifier { line, column, .. } => (*line, *column),
             SemanticError::DuplicateDeclaration { line, column, .. } => (*line, *column),
@@ -225,6 +236,9 @@ impl ErrorReporter for SemanticError {
 impl SemanticError {
     fn get_detailed_message(&self) -> String {
         match self {
+            SemanticError::AssignmentToArray { name, .. } => {
+                format!("Assignment to array '{}' without index", name)
+            }
             SemanticError::ArraySizeMismatch {
                 name,
                 expected,
@@ -293,6 +307,7 @@ impl SemanticError {
 
     fn get_token_length(&self) -> usize {
         match self {
+            SemanticError::AssignmentToArray { name, .. } => name.len(),
             SemanticError::ArraySizeMismatch { name, .. } => name.len(),
             SemanticError::UndeclaredIdentifier { name, .. } => name.len(),
             SemanticError::DuplicateDeclaration { name, .. } => name.len(),

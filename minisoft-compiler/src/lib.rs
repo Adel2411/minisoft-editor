@@ -9,6 +9,7 @@ use parser::ast::{
     Declaration, DeclarationKind, Expression, ExpressionKind, Literal, LiteralKind, Program,
     Statement, StatementKind,
 };
+use semantics::error::SemanticError;
 use serde::{Deserialize, Serialize};
 
 // First, let's create a serializable version of CompilationResult
@@ -295,6 +296,10 @@ pub enum SerializableSyntaxError {
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type", content = "data")]
 pub enum SerializableSemanticError {
+    AssignmentToArray {
+        name: String,
+        position: SerializableErrorPosition,
+    },
     ArraySizeMismatch {
         name: String,
         expected: usize,
@@ -454,7 +459,16 @@ fn convert_semantic_error(
     err: &crate::semantics::error::SemanticError,
 ) -> SerializableSemanticError {
     match err {
-        crate::semantics::error::SemanticError::ArraySizeMismatch {
+        SemanticError::AssignmentToArray { name, line, column } => {
+            SerializableSemanticError::AssignmentToArray {
+                name: name.clone(),
+                position: SerializableErrorPosition {
+                    line: *line,
+                    column: *column,
+                },
+            }
+        }
+        SemanticError::ArraySizeMismatch {
             name,
             expected,
             actual,
@@ -469,7 +483,7 @@ fn convert_semantic_error(
                 column: *column,
             },
         },
-        crate::semantics::error::SemanticError::UndeclaredIdentifier { name, line, column } => {
+        SemanticError::UndeclaredIdentifier { name, line, column } => {
             SerializableSemanticError::UndeclaredIdentifier {
                 name: name.clone(),
                 position: SerializableErrorPosition {
@@ -478,7 +492,7 @@ fn convert_semantic_error(
                 },
             }
         }
-        crate::semantics::error::SemanticError::DuplicateDeclaration {
+        SemanticError::DuplicateDeclaration {
             name,
             line,
             column,
@@ -495,7 +509,7 @@ fn convert_semantic_error(
                 column: *original_column,
             },
         },
-        crate::semantics::error::SemanticError::TypeMismatch {
+        SemanticError::TypeMismatch {
             expected,
             found,
             line,
@@ -510,7 +524,7 @@ fn convert_semantic_error(
             },
             context: context.clone(),
         },
-        crate::semantics::error::SemanticError::DivisionByZero { line, column } => {
+        SemanticError::DivisionByZero { line, column } => {
             SerializableSemanticError::DivisionByZero {
                 position: SerializableErrorPosition {
                     line: *line,
@@ -518,7 +532,7 @@ fn convert_semantic_error(
                 },
             }
         }
-        crate::semantics::error::SemanticError::ConstantModification { name, line, column } => {
+        SemanticError::ConstantModification { name, line, column } => {
             SerializableSemanticError::ConstantModification {
                 name: name.clone(),
                 position: SerializableErrorPosition {
@@ -527,7 +541,7 @@ fn convert_semantic_error(
                 },
             }
         }
-        crate::semantics::error::SemanticError::ArrayIndexOutOfBounds {
+        SemanticError::ArrayIndexOutOfBounds {
             name,
             index,
             size,
@@ -542,7 +556,7 @@ fn convert_semantic_error(
                 column: *column,
             },
         },
-        crate::semantics::error::SemanticError::InvalidConditionValue {
+        SemanticError::InvalidConditionValue {
             found,
             line,
             column,
@@ -553,7 +567,7 @@ fn convert_semantic_error(
                 column: *column,
             },
         },
-        crate::semantics::error::SemanticError::NonArrayIndexing {
+        SemanticError::NonArrayIndexing {
             var_name,
             line,
             column,
@@ -564,7 +578,7 @@ fn convert_semantic_error(
                 column: *column,
             },
         },
-        crate::semantics::error::SemanticError::InvalidArraySize {
+        SemanticError::InvalidArraySize {
             name,
             size,
             line,
@@ -577,9 +591,7 @@ fn convert_semantic_error(
                 column: *column,
             },
         },
-        crate::semantics::error::SemanticError::EmptyProgram => {
-            SerializableSemanticError::EmptyProgram
-        }
+        SemanticError::EmptyProgram => SerializableSemanticError::EmptyProgram,
     }
 }
 

@@ -1,11 +1,11 @@
 mod declaration_analyzer;
-mod statement_analyzer;
 mod expression_analyzer;
+mod statement_analyzer;
 
-use crate::parser::ast::{Program, Type, Expression, ExpressionKind, Operator, LiteralKind};
+use crate::parser::ast::{Expression, ExpressionKind, LiteralKind, Operator, Program, Type};
 use crate::semantics::error::SemanticError;
 use crate::semantics::source_map::SourceMap;
-use crate::semantics::symbol_table::{SymbolTable, SymbolValue, SymbolKind};
+use crate::semantics::symbol_table::{SymbolKind, SymbolTable, SymbolValue};
 use std::collections::HashSet;
 use std::ops::Range;
 
@@ -22,7 +22,7 @@ impl SemanticAnalyzer {
             symbol_table: SymbolTable::new(),
             errors: Vec::new(),
             reported_errors: HashSet::new(),
-            source_map: SourceMap::new(&source_code),
+            source_map: SourceMap::new(source_code),
         }
     }
 
@@ -45,7 +45,6 @@ impl SemanticAnalyzer {
     fn empty_program(&mut self) {
         self.add_error(SemanticError::EmptyProgram);
     }
-
 
     fn array_size_mismatch_error(
         &mut self,
@@ -141,27 +140,26 @@ impl SemanticAnalyzer {
         });
     }
 
-    fn condition_value_error(
-        &mut self,
-        span: &Range<usize>,
-        found: String,
-    ) {
+    fn condition_value_error(&mut self, span: &Range<usize>, found: String) {
         self.add_error(SemanticError::InvalidConditionValue {
-            found: found,
+            found,
             line: self.source_map.get_line(span),
             column: self.source_map.get_column(span),
         });
     }
 
-    fn invalid_array_size_error(
-        &mut self,
-        span: &Range<usize>,
-        name: &str,
-        size: i32,
-    ) {
+    fn invalid_array_size_error(&mut self, span: &Range<usize>, name: &str, size: i32) {
         self.add_error(SemanticError::InvalidArraySize {
             name: name.to_string(),
             size,
+            line: self.source_map.get_line(span),
+            column: self.source_map.get_column(span),
+        });
+    }
+
+    fn assignement_to_array_error(&mut self, span: &Range<usize>, name: &str) {
+        self.add_error(SemanticError::AssignmentToArray {
+            name: name.to_string(),
             line: self.source_map.get_line(span),
             column: self.source_map.get_column(span),
         });
@@ -176,7 +174,6 @@ impl SemanticAnalyzer {
         }
     }
 
-
     pub fn get_errors(&self) -> &Vec<SemanticError> {
         &self.errors
     }
@@ -187,10 +184,8 @@ impl SemanticAnalyzer {
 
     pub fn evaluate_constant_expression(&mut self, expr: &Expression) -> Option<LiteralKind> {
         match &expr.node {
-            ExpressionKind::Literal(lit) => {
-                Some(lit.node.clone())
-            },
-            
+            ExpressionKind::Literal(lit) => Some(lit.node.clone()),
+
             ExpressionKind::Identifier(name) => {
                 if let Some(symbol) = self.symbol_table.get(name) {
                     if symbol.is_constant {
@@ -243,7 +238,7 @@ impl SemanticAnalyzer {
                 // Handle array access for constant expressions
                 // First evaluate the index expression to avoid borrowing conflicts
                 let index_value = self.evaluate_constant_expression(index_expr);
-                
+
                 if let Some(symbol) = self.symbol_table.get(name) {
                     // Check if we're accessing an array
                     if let SymbolKind::Array(_) = symbol.kind {

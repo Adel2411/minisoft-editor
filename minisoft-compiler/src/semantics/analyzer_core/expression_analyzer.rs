@@ -3,7 +3,10 @@ use std::ops::Range;
 use crate::parser::ast::{
     Expression, ExpressionKind, Literal, LiteralKind, Located, Operator, Type, UnaryOperator,
 };
-use crate::semantics::{analyzer_core::SemanticAnalyzer, symbol_table::{SymbolKind, SymbolValue}};
+use crate::semantics::{
+    analyzer_core::SemanticAnalyzer,
+    symbol_table::{SymbolKind, SymbolValue},
+};
 
 pub struct ValueType {
     pub value: Option<f32>,
@@ -39,12 +42,16 @@ impl SemanticAnalyzer {
     pub fn analyze_expression(&mut self, expr: &Expression) -> Option<ValueType> {
         match &expr.node {
             ExpressionKind::Identifier(name) => self.handle_identifier(name, &expr.span),
-            ExpressionKind::ArrayAccess(name, index_expression) => 
-                self.handle_array_access(name, index_expression, &expr.span),
+            ExpressionKind::ArrayAccess(name, index_expression) => {
+                self.handle_array_access(name, index_expression, &expr.span)
+            }
             ExpressionKind::Literal(value) => self.handle_literal(value),
-            ExpressionKind::BinaryOp(left_expression, operator, right_expression) => 
-                self.handle_binary_operation(left_expression, operator, right_expression),
-            ExpressionKind::UnaryOp(unary_operator, located) => self.handle_unary_operation(unary_operator, located, &expr.span)
+            ExpressionKind::BinaryOp(left_expression, operator, right_expression) => {
+                self.handle_binary_operation(left_expression, operator, right_expression)
+            }
+            ExpressionKind::UnaryOp(unary_operator, located) => {
+                self.handle_unary_operation(unary_operator, located, &expr.span)
+            }
         }
     }
 
@@ -64,7 +71,7 @@ impl SemanticAnalyzer {
             SymbolValue::Uninitialized => None,
             SymbolValue::Array(_) => None, // Array as a whole doesn't have a single value
         };
-        
+
         Some(ValueType::new(symbol.symbol_type.clone(), value))
     }
 
@@ -100,8 +107,8 @@ impl SemanticAnalyzer {
                         );
                         return None;
                     }
-                    
-                    // If we have a constant index and the array is initialized, 
+
+                    // If we have a constant index and the array is initialized,
                     // we can try to get the actual value
                     if let SymbolValue::Array(values) = &symbol.value {
                         if (*idx as usize) < values.len() {
@@ -131,15 +138,12 @@ impl SemanticAnalyzer {
                     return None;
                 }
 
-                // Return the array element type, but without a specific value 
+                // Return the array element type, but without a specific value
                 // (since we can't determine at compile time which element will be accessed)
                 Some(ValueType::new(symbol_type, None))
-            },
+            }
             SymbolKind::Variable => {
-                self.non_array_indexing(
-                    &index_expression.span,
-                    name,
-                );
+                self.non_array_indexing(&index_expression.span, name);
                 None
             }
             _ => None,
@@ -198,7 +202,7 @@ impl SemanticAnalyzer {
                                 self.division_by_zero_error(&right.span);
                                 return None;
                             }
-                            LiteralKind::Float(f) if f == 0.0 => {
+                            LiteralKind::Float(0.0) => {
                                 self.division_by_zero_error(&right.span);
                                 return None;
                             }
@@ -323,15 +327,19 @@ impl SemanticAnalyzer {
                     );
                     return None;
                 }
-                if expression_type.value != Some(0.0)
-                    && expression_type.value != Some(1.0)
-                {
+                if expression_type.value != Some(0.0) && expression_type.value != Some(1.0) {
                     self.condition_value_error(span, expression_type.value.unwrap().to_string());
                     return None;
                 }
 
                 let negated_value = match expression_type.value {
-                    Some(value) => if value == 0.0 { 1.0 } else { 0.0 },
+                    Some(value) => {
+                        if value == 0.0 {
+                            1.0
+                        } else {
+                            0.0
+                        }
+                    }
                     None => 0.0,
                 };
                 Some(ValueType::new(Type::Int, Some(negated_value)))
