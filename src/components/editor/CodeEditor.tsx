@@ -322,13 +322,13 @@ export default function Editor({
         <div
           className={`p-2 flex items-center gap-2 border-b ${
             theme === "dark"
-              ? "bg-gray-900 border-gray-700"
-              : "bg-gray-100 border-gray-200"
+            ? "bg-[#1e1a17] border-[#3e3632]"
+            : "bg-[#fff1ec] border-[#efe0d9]"
           }`}
         >
           <Search
             size={14}
-            className={theme === "dark" ? "text-gray-400" : "text-gray-600"}
+            className={theme === "dark" ? "text-[#b5a9a2]" : "text-[#495057]"}
           />
           <input
             type="text"
@@ -343,8 +343,8 @@ export default function Editor({
             placeholder="Search"
             className={`flex-1 bg-transparent border outline-none px-2 py-1 rounded ${
               theme === "dark"
-                ? "border-gray-700 text-gray-200"
-                : "border-gray-300 text-gray-800"
+            ? "bg-[#1e1a17] border-[#3e3632]"
+            : "bg-[#fff1ec] border-[#efe0d9]"
             }`}
             autoFocus
           />
@@ -352,19 +352,23 @@ export default function Editor({
             onClick={executeSearch}
             className={`px-2 py-1 rounded ${
               theme === "dark"
-                ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
-                : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                ? "bg-[#312c28] hover:bg-[#3e3632] text-[#f3ebe7]"
+                : "bg-[#efe0d9] hover:bg-[#e6d5ce] text-[#495057]"
             }`}
           >
             Search
           </button>
-          <div className="text-xs text-gray-500">
+          <div className={`text-xs ${
+            theme === "dark" ? "text-[#b5a9a2]" : "text-[#868e96]"
+          }`}>
             {getSearchMatches().currentMatch}/{getSearchMatches().totalMatches}
           </div>
           <button
             onClick={findPrevious}
             className={`p-1 rounded ${
-              theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
+              theme === "dark"
+                ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
+                : "hover:bg-[#efe0d9] text-[#495057] hover:text-[#212529]"
             }`}
           >
             ↑
@@ -372,7 +376,9 @@ export default function Editor({
           <button
             onClick={findNext}
             className={`p-1 rounded ${
-              theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
+              theme === "dark"
+                ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
+                : "hover:bg-[#efe0d9] text-[#495057] hover:text-[#212529]"
             }`}
           >
             ↓
@@ -380,7 +386,9 @@ export default function Editor({
           <button
             onClick={() => setIsSearchOpen(false)}
             className={`p-1 rounded ${
-              theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
+              theme === "dark"
+                ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
+                : "hover:bg-[#efe0d9] text-[#495057] hover:text-[#212529]"
             }`}
           >
             ✕

@@ -372,12 +372,12 @@ export default function ErrorReporter({
             </div>
           </div>
 
-          {/* Code snippet section */}
+          {/* Code snippet section - Updated colors */}
           <div
             className={`mt-3 p-2 rounded-md font-mono ${
-              theme === "dark" ? "bg-gray-900" : "bg-gray-100"
+              theme === "dark" ? "bg-[#1e1a17]" : "bg-[#fefaf8]"
             } border ${
-              theme === "dark" ? "border-gray-800" : "border-gray-300"
+              theme === "dark" ? "border-[#3e3632]" : "border-[#efe0d9]"
             }`}
           >
             {errorDetails.line > 0 && codeContext.lines.length > 0 ? (
@@ -528,10 +528,10 @@ export default function ErrorReporter({
           </div>
         </div>
 
-        {/* Error List */}
+        {/* Error List section - Updated colors */}
         <div
           className={`p-4 rounded-b-lg overflow-auto max-h-[calc(80vh-180px)] ${
-            theme === "dark" ? "bg-gray-900" : "bg-gray-50"
+            theme === "dark" ? "bg-[#1e1a17]" : "bg-[#fefaf8]"
           }`}
         >
           {totalErrors === 0 ? (
@@ -556,7 +556,8 @@ export default function ErrorReporter({
           )}
         </div>
 
-        <div className="p-4 flex justify-end border-t border-gray-700">
+        {/* Footer buttons section - Updated colors */}
+        <div className={`p-4 flex justify-end border-t ${theme === "dark" ? "border-[#3e3632]" : "border-[#efe0d9]"}`}>
           <button
             onClick={() => {
               // Copy all errors to clipboard in a useful format
@@ -605,8 +606,8 @@ export default function ErrorReporter({
             }}
             className={`px-4 py-2 rounded-md transition-colors mr-2 flex items-center gap-2 ${
               theme === "dark"
-                ? "bg-gray-700 hover:bg-gray-600 text-gray-100"
-                : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                ? "bg-[#312c28] hover:bg-[#3e3632] text-[#f3ebe7]"
+                : "bg-[#efe0d9] hover:bg-[#e6d5ce] text-[#495057]"
             }`}
           >
             <Copy size={16} />
@@ -617,8 +618,8 @@ export default function ErrorReporter({
             onClick={onDismiss}
             className={`px-4 py-2 rounded-md transition-colors ${
               theme === "dark"
-                ? "bg-gray-700 hover:bg-gray-600 text-gray-100"
-                : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                ? "bg-[#312c28] hover:bg-[#3e3632] text-[#f3ebe7]"
+                : "bg-[#efe0d9] hover:bg-[#e6d5ce] text-[#495057]"
             }`}
           >
             Dismiss
