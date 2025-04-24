@@ -6,55 +6,55 @@
 
 /* Token colors - Light theme */
 .token.keyword {
-  color: #cb502a; /* Primary accent color */
+  color: #d94e1f; /* Vibrant orange-red for keywords to stand out */
 }
 
 .token.control {
-  color: #a84424; /* Info color - darker orange for control statements */
+  color: #9c3400; /* Deep rust for control statements */
 }
 
 .token.io {
-  color: #ed7d39; /* Warning color - bright orange for IO operations */
+  color: #b86600; /* Amber-brown for IO operations */
 }
 
 .token.preprocessor {
-  color: #e05d30; /* Accent color for preprocessor directives */
+  color: #e05d00; /* Bright orange for preprocessor directives */
 }
 
 .token.constant {
-  color: #a84424; /* Info color for constants */
+  color: #008484; /* Teal green for constants - completely different hue */
 }
 
 .token.punctuation {
-  color: #495057; /* Text secondary for punctuation */
+  color: #5a6268; /* Slate gray for punctuation */
 }
 
 .token.bracket {
-  color: #495057; /* Text secondary for brackets */
+  color: #7c8288; /* Lighter than punctuation for better distinction */
 }
 
 .token.operator {
-  color: #e03131; /* Error color for operators to make them stand out */
+  color: #c22d2d; /* Deep red for operators */
 }
 
 .token.logical {
-  color: #a84424; /* Info color for logical operators */
+  color: #7a4988; /* Purple for logical operators - major hue shift */
 }
 
 .token.number {
-  color: #cb502a; /* Accent hover for numbers */
+  color: #0a6e31; /* Forest green for numbers */
 }
 
 .token.string {
-  color: #e05d30; /* Accent color for strings */
+  color: #af4700; /* Terracotta for strings */
 }
 
 .token.identifier {
-  color: #495057; /* Text secondary for identifiers */
+  color: #495057; /* Darker gray for identifiers */
 }
 
 .token.comment {
-  color: #868e96; /* Text tertiary for comments */
+  color: #8a8276; /* Warmer gray for comments */
   font-style: italic;
 }
 
@@ -65,47 +65,47 @@
 
 /* Token colors - Dark theme */
 [data-theme="dark"] .token.keyword {
-  color: #f39c78; /* Success color - light orange for keywords */
+  color: #ff875f; /* Brighter orange for keywords */
 }
 
 [data-theme="dark"] .token.control {
-  color: #fb8f67; /* Info color - for control statements */
+  color: #f5694b; /* Warmer red-orange for control statements */
 }
 
 [data-theme="dark"] .token.io {
-  color: #ffb86c; /* Warning color - bright orange for IO */
+  color: #ffd282; /* Lighter yellow-orange for IO operations */
 }
 
 [data-theme="dark"] .token.preprocessor {
-  color: #e86f42; /* Accent color for preprocessor */
+  color: #fd9353; /* Bright peach for preprocessor */
 }
 
 [data-theme="dark"] .token.constant {
-  color: #f39c78; /* Success color for constants */
+  color: #ffab70; /* Peachy orange for constants */
 }
 
 [data-theme="dark"] .token.punctuation {
-  color: #d9cec9; /* Text secondary for punctuation */
+  color: #ccc0ba; /* Light gray with warm tint */
 }
 
 [data-theme="dark"] .token.bracket {
-  color: #d9cec9; /* Text secondary for brackets */
+  color: #e0d6d1; /* Lighter than punctuation */
 }
 
 [data-theme="dark"] .token.operator {
-  color: #fa5252; /* Error color for operators */
+  color: #ff6b6b; /* Bright red for operators */
 }
 
 [data-theme="dark"] .token.logical {
-  color: #fb8f67; /* Info color for logical operators */
+  color: #ff9e64; /* Rich orange for logical operators */
 }
 
 [data-theme="dark"] .token.number {
-  color: #f39c78; /* Success color for numbers */
+  color: #ffb86c; /* Bright yellow-orange for numbers */
 }
 
 [data-theme="dark"] .token.string {
-  color: #e86f42; /* Accent color for strings */
+  color: #ffa066; /* Soft orange for strings */
 }
 
 [data-theme="dark"] .token.identifier {

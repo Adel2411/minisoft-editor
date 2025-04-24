@@ -114,18 +114,17 @@ export default function Editor({
 
   // Tokenize and highlight the code whenever it changes
   useEffect(() => {
-    const tokens = tokenize(code); // Tokenize the code
-    console.log(tokens);
-    const highlighted = tokens
-      .map((token) => {
-        // Escape HTML characters to prevent them from being interpreted as HTML tags
-        const escapedValue = token.value
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
+    const tokens = tokenize(code); 
+    console.log("Token types:", tokens.map(t => t.type)); // Add this line
+    
+    const highlighted = tokens.map((token) => {
+      // Escape HTML characters to prevent them from being interpreted as HTML tags
+      const escapedValue = token.value
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 
-        return `<span class="token ${token.type}">${escapedValue}</span>`;
-      })
-      .join("");
+      return `<span class="token ${token.type}">${escapedValue}</span>`;
+    }).join("");
     setHighlightedCode(highlighted);
   }, [code]);
 

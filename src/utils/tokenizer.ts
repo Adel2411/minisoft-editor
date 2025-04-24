@@ -14,7 +14,7 @@ export function tokenize(code: string): Token[] {
     ["newline", /^\n/],
 
     // Comments - Fix the regex patterns
-    ["comment", /^<!- .+? -!>/], // Correct pattern for <!- Comment -!>
+    ["comment", /^<!-.+?-!>/], // Correct pattern for <!- Comment -!>
     ["comment", /^\{--[\s\S]*?--\}/], // Simplified pattern for {-- --}
 
     // Keywords
@@ -36,15 +36,14 @@ export function tokenize(code: string): Token[] {
     // Punctuation and symbols
     ["punctuation", /^[;,:]/],
     ["bracket", /^[\[\](){}]/],
+    
+    // Assignment (specific category for assignment)
+    ["assignment", /^:=/],
 
-    // Assignment
-    ["operator", /^:=/],
-
-    // Operators
-    ["operator", /^(=|\+|-|\*|\/|>|<|>=|<=|==|!=|!)/],
-
-    // Logic operators
-    ["logical", /^(AND|OR)\b/],
+    // Operators - now split into categories
+    ["arithmetic", /^(\+|-|\*|\/)/],
+    ["comparison", /^(>|<|>=|<=|==|!=)/],
+    ["logical", /^(AND|OR|!)\b/],
 
     // Identifiers (check after keywords)
     ["identifier", /^[a-zA-Z][a-zA-Z0-9_]*/],

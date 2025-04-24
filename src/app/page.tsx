@@ -7,7 +7,7 @@ import ResultPanel from "@/components/ResultPanel";
 import FileModal from "@/components/FileModal";
 import {
   Code,
-  Terminal,
+  Terminal as TerminalIcon,
   FileText,
   Database,
   FolderOpen,
@@ -20,6 +20,7 @@ import {
 import { invoke } from "@tauri-apps/api/core";
 import ErrorReporter from "@/components/ErrorReporter";
 import Image from "next/image";
+import Terminal from "@/components/Terminal";
 
 export default function Home() {
   const [code, setCode] = useState<string>(
@@ -51,6 +52,7 @@ EndPg;`,
   const [isFileModalOpen, setIsFileModalOpen] = useState<boolean>(false);
   const [currentFileName, setCurrentFileName] = useState<string | null>(null);
   const [error, setError] = useState<CompilationErrors | null>(null);
+  const [isTerminalOpen, setIsTerminalOpen] = useState<boolean>(false);
 
   // Set editor as ready after initial render
   useEffect(() => {
@@ -204,7 +206,7 @@ EndPg;`,
                 className={`p-3 rounded-md ${theme === "dark" ? "bg-[#312c28]" : "bg-[#fff1ec]"}`}
               >
                 <div className="text-[#e86f42] mb-2">
-                  <Terminal size={24} className="mx-auto" />
+                  <TerminalIcon size={24} className="mx-auto" />
                 </div>
                 <p className="text-sm">Compilation results</p>
               </div>
@@ -310,6 +312,19 @@ EndPg;`,
 
           {/* Settings and view options */}
           <div className="flex items-center gap-1">
+            {/* Terminal toggle button */}
+            <button
+              onClick={() => setIsTerminalOpen(!isTerminalOpen)}
+              className={`p-2 rounded-md transition-colors ${
+                theme === "dark"
+                  ? "hover:bg-[#312c28] text-[#d9cec9]"
+                  : "hover:bg-[#fff1ec] text-gray-700"
+              } ${isTerminalOpen ? theme === "dark" ? "bg-[#312c28] text-[#e86f42]" : "bg-[#fff1ec] text-[#e05d30]" : ""}`}
+              title="Toggle Terminal"
+            >
+              <TerminalIcon size={16} />
+            </button>
+            
             <button
               onClick={toggleTheme}
               className={`p-2 rounded-md transition-colors ${
@@ -435,7 +450,7 @@ EndPg;`,
                     : ""
                 }`}
               >
-                <Terminal size={16} />
+                <TerminalIcon size={16} />
                 Quadruples
               </button>
             </div>
@@ -455,6 +470,21 @@ EndPg;`,
           theme={theme}
         />
       )}
+      
+      {/* Terminal component */}
+      <Terminal 
+        theme={theme}
+        isVisible={isTerminalOpen}
+        onClose={() => setIsTerminalOpen(false)}
+        compileCode={async (code, filePath) => {
+          setCode(code);
+          if (filePath) {
+            setCurrentFileName(filePath);
+          }
+          await compileCode();
+        }}
+        setCurrentFileName={setCurrentFileName}
+      />
     </main>
   );
 }
