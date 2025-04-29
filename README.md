@@ -94,7 +94,7 @@ minisoft-editor/
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/minisoft-editor.git
+   git clone https://github.com/Adel2411/minisoft-editor.git
    cd minisoft-editor
    ```
 
@@ -125,7 +125,8 @@ minisoft-editor/
 ### Backend Development
 
 The backend is implemented in Rust and uses the MiniSoft compiler to process the source code. To add or modify backend functionality:
-(Note: The compiler code in `minisoft-compiler/` is based on the [Noussour/rust-compiler](https://github.com/Noussour/rust-compiler) repository.)
+
+> **Note:** The compiler code in `minisoft-compiler/` is based on the [rust-compiler](https://github.com/Noussour/rust-compiler) repository, created by [Rach17](https://github.com/Rach17) and [Adel2411](https://github.com/Adel2411)
 
 1. Edit the Rust files in the `minisoft-compiler/src/` directory.
 2. Update the Tauri commands in `src-tauri/src/lib.rs` to expose functionality to the frontend.
@@ -163,6 +164,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Acknowledgments
 
-- [Lalrpop](https://github.com/lalrpop/lalrpop) for parser generation.
 - [Tauri](https://tauri.app/) for the desktop application framework.
-- [Next.js](https://nextjs.org/) for the frontend framework.
