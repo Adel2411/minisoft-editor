@@ -1,158 +1,11 @@
 import React, { useState, useRef, useEffect, JSX } from 'react';
-import { Terminal as TerminalIcon, X, ChevronRight, Copy, RotateCcw, Loader2, Folder } from 'lucide-react';
-
-// Example files content
-const exampleFilesMap: { [key: string]: string } = {
-  'factorial.ms': `MainPrgm Factorial;
-Var
-  let n: Int;
-  let result: Int;
-  let i: Int;
-BeginPg
-{
-  n := 5;
-  result := 1;
-  
-  for i from 1 to n step 1 {
-    result := result * i;
-  }
-  
-  output(result);  <!- Outputs: 120 -!>
-}
-EndPg;`,
-  'fibonacci.ms': `MainPrgm Fibonacci;
-Var
-  let n: Int = 10;
-  let a: Int = 0;
-  let b: Int = 1;
-  let temp: Int;
-  let i: Int;
-BeginPg
-{
-  output(a);  <!- Outputs: 0 -!>
-  output(b);  <!- Outputs: 1 -!>
-  
-  for i from 2 to n step 1 {
-    temp := a + b;
-    a := b;
-    b := temp;
-    output(b);
-  }
-}
-EndPg;`,
-  'hello_world.ms': `MainPrgm HelloWorld;
-BeginPg
-{
-  output("Hello, World!");
-}
-EndPg;`,
-  'loops.ms': `MainPrgm Loops;
-Var
-  let i: Int;
-  let sum: Int = 0;
-BeginPg
-{
-  for i from 1 to 5 step 1 {
-    sum := sum + i;
-    output(sum);
-  }
-}
-EndPg;`,
-  'conditionals.ms': `MainPrgm Conditionals;
-Var
-  let x: Int = 10;
-  let y: Int = 20;
-BeginPg
-{
-  if (x > y) {
-    output("x is greater than y");
-  } else {
-    output("y is greater than or equal to x");
-  }
-}
-EndPg;`
-};
-
-// Fallback implementations for Tauri APIs
-const fileSystem = {
-  // Check if file exists - always returns true for example files
-  exists: async (path: string) => {
-    const fileName = path.split('/').pop() || path.split('\\').pop() || path;
-    // For example files, return true
-    if (exampleFilesMap[fileName]) return true;
-    // For actual files, we can't check existence in browser
-    return true;
-  },
-  
-  // Read text file - returns content for example files or shows file picker
-  readTextFile: async (path: string) => {
-    const fileName = path.split('/').pop() || path.split('\\').pop() || path;
-    // For example files, return the content
-    if (exampleFilesMap[fileName]) return exampleFilesMap[fileName];
-    
-    // For other files, this would normally read from filesystem
-    // Since we're in a browser, we'll return a placeholder
-    return `// Content of ${fileName}\n// (File system access not available in web mode)`;
-  }
-};
-
-// File dialog implementation using browser's file picker
-const dialog = {
-  open: async (options: { multiple?: boolean, filters?: Array<{ name: string, extensions: string[] }> }) => {
-    return new Promise((resolve) => {
-      // Create a file input element
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.multiple = options.multiple || false;
-      
-      // Set accept attribute based on filters
-      if (options.filters && options.filters.length > 0) {
-        const extensions = options.filters.flatMap(filter => 
-          filter.extensions.map(ext => `.${ext}`)
-        );
-        input.accept = extensions.join(',');
-      }
-      
-      // Handle file selection
-      input.onchange = () => {
-        if (input.files && input.files.length > 0) {
-          // Return the file name as the path
-          resolve(input.files[0].name);
-        } else {
-          resolve(null);
-        }
-      };
-      
-      // Handle cancellation
-      input.oncancel = () => resolve(null);
-      
-      // Trigger file dialog
-      input.click();
-    });
-  }
-};
-
-interface TerminalProps {
-  theme: 'dark' | 'light';
-  isVisible: boolean;
-  onClose: () => void;
-  compileCode: (code: string, filePath?: string) => Promise<void>;
-  setCurrentFileName?: (name: string) => void;
-}
-
-interface CommandEntry {
-  id: number;
-  command: string;
-  output: string | JSX.Element;
-  timestamp: Date;
-  isLoading?: boolean;
-}
-
-interface FileOperation {
-  status: 'pending' | 'success' | 'error';
-  message?: string;
-  filePath?: string;
-}
+import { TerminalProps, CommandEntry, FileOperation } from './terminal/types';
+import { exampleFilesMap } from './terminal/ExampleFiles';
+import { generateHelpOutput, generateFileListOutput } from './terminal/commands';
+import { dialog, fileSystem } from './terminal/FileSystem';
+import TerminalHeader from './terminal/ui/TerminalHeader';
+import TerminalContent from './terminal/ui/TerminalContent';
+import TerminalInput from './terminal/ui/TerminalInput';
 
 const Terminal: React.FC<TerminalProps> = ({ 
   theme, 
@@ -172,33 +25,9 @@ const Terminal: React.FC<TerminalProps> = ({
   const [currentCommand, setCurrentCommand] = useState<string>('');
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [fileOperation, setFileOperation] = useState<FileOperation | null>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const commandCount = useRef<number>(1);
-
-  // Function to generate help output with proper styling
-  function generateHelpOutput(currentTheme: 'dark' | 'light') {
-    const commandColor = currentTheme === 'dark' ? 'text-[#e86f42]' : 'text-[#e05d30]';
-    
-    return (
-      <div className="pl-4">
-        <p className="font-medium mb-1">Available commands:</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1">
-          <p><span className={commandColor}>help</span> - Show this help message</p>
-          <p><span className={commandColor}>clear</span> - Clear terminal</p>
-          <p><span className={commandColor}>msc [file-path]</span> - Compile a MiniSoft file</p>
-          <p><span className={commandColor}>open</span> - Open file browser to select a .ms file</p>
-          <p><span className={commandColor}>echo [text]</span> - Print text</p>
-          <p><span className={commandColor}>date</span> - Show current date and time</p>
-          <p><span className={commandColor}>version</span> - Show MiniSoft version</p>
-          <p><span className={commandColor}>ls</span> - List example files</p>
-          <p><span className={commandColor}>cat [file-name]</span> - View example file content</p>
-          <p><span className={commandColor}>theme</span> - Show current theme</p>
-        </div>
-      </div>
-    );
-  }
 
   useEffect(() => {
     if (terminalRef.current) {
@@ -282,105 +111,6 @@ const Terminal: React.FC<TerminalProps> = ({
     } finally {
       setIsProcessing(false);
     }
-  };
-  
-  const generateFileListOutput = (currentTheme: 'dark' | 'light') => {
-    const fileColor = currentTheme === 'dark' ? 'text-[#b4e9f2]' : 'text-[#0087a5]';
-    const exampleFiles = [
-      'factorial.ms',
-      'fibonacci.ms',
-      'hello_world.ms',
-      'loops.ms',
-      'conditionals.ms'
-    ];
-    
-    return (
-      <div className="pl-4">
-        <p className="mb-1">Example MiniSoft files:</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
-          {exampleFiles.map(file => (
-            <p key={file} className={fileColor}>
-              {file}
-            </p>
-          ))}
-        </div>
-        <p className="mt-2 text-xs opacity-75">
-          Use <span className={currentTheme === 'dark' ? 'text-[#e86f42]' : 'text-[#e05d30]'}>cat [filename]</span> to view file content
-        </p>
-      </div>
-    );
-  };
-  
-  // Example files content
-  const exampleFilesMap: { [key: string]: string } = {
-    'factorial.ms': `MainPrgm Factorial;
-Var
-  let n: Int;
-  let result: Int;
-  let i: Int;
-BeginPg
-{
-  n := 5;
-  result := 1;
-  
-  for i from 1 to n step 1 {
-    result := result * i;
-  }
-  
-  output(result);  <!- Outputs: 120 -!>
-}
-EndPg;`,
-    'fibonacci.ms': `MainPrgm Fibonacci;
-Var
-  let n: Int = 10;
-  let a: Int = 0;
-  let b: Int = 1;
-  let temp: Int;
-  let i: Int;
-BeginPg
-{
-  output(a);  <!- Outputs: 0 -!>
-  output(b);  <!- Outputs: 1 -!>
-  
-  for i from 2 to n step 1 {
-    temp := a + b;
-    a := b;
-    b := temp;
-    output(b);
-  }
-}
-EndPg;`,
-    'hello_world.ms': `MainPrgm HelloWorld;
-BeginPg
-{
-  output("Hello, World!");
-}
-EndPg;`,
-    'loops.ms': `MainPrgm Loops;
-Var
-  let i: Int;
-  let sum: Int = 0;
-BeginPg
-{
-  for i from 1 to 5 step 1 {
-    sum := sum + i;
-    output(sum);
-  }
-}
-EndPg;`,
-    'conditionals.ms': `MainPrgm Conditionals;
-Var
-  let x: Int = 10;
-  let y: Int = 20;
-BeginPg
-{
-  if (x > y) {
-    output("x is greater than y");
-  } else {
-    output("y is greater than or equal to x");
-  }
-}
-EndPg;`
   };
 
   const handleCatCommand = async (cmdId: number, fileName: string) => {
@@ -631,116 +361,29 @@ EndPg;`
           theme === 'dark' ? 'bg-[#262220] border-[#3e3632]' : 'bg-white border-[#efe0d9]'
         }`}
       >
-        {/* Terminal header */}
-        <div 
-          className={`flex items-center justify-between p-2 border-b ${
-            theme === 'dark' ? 'border-[#3e3632]' : 'border-[#efe0d9]'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <TerminalIcon size={16} className={theme === 'dark' ? 'text-[#e86f42]' : 'text-[#e05d30]'} />
-            <span className="font-medium text-sm">MiniSoft Terminal</span>
-            {isProcessing && (
-              <span className="flex items-center gap-1">
-                <Loader2 size={12} className="animate-spin" />
-                <span className="text-xs opacity-80">Processing...</span>
-              </span>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => processCommand('open')}
-              className={`p-1.5 rounded hover:opacity-80 transition-opacity ${
-                theme === 'dark' ? 'hover:bg-[#312c28]' : 'hover:bg-[#fff1ec]'
-              }`}
-              title="Open file"
-            >
-              <Folder size={14} />
-            </button>
-            <button 
-              onClick={copyTerminalContent}
-              className={`p-1.5 rounded hover:opacity-80 transition-opacity ${
-                theme === 'dark' ? 'hover:bg-[#312c28]' : 'hover:bg-[#fff1ec]'
-              }`}
-              title="Copy terminal content"
-            >
-              <Copy size={14} />
-            </button>
-            <button 
-              onClick={clearTerminal}
-              className={`p-1.5 rounded hover:opacity-80 transition-opacity ${
-                theme === 'dark' ? 'hover:bg-[#312c28]' : 'hover:bg-[#fff1ec]'
-              }`}
-              title="Clear terminal"
-            >
-              <RotateCcw size={14} />
-            </button>
-            <button 
-              onClick={onClose}
-              className={`p-1.5 rounded hover:opacity-80 transition-opacity ${
-                theme === 'dark' ? 'hover:bg-[#312c28]' : 'hover:bg-[#fff1ec]'
-              }`}
-              title="Close terminal"
-            >
-              <X size={14} />
-            </button>
-          </div>
-        </div>
+        <TerminalHeader 
+          theme={theme}
+          isProcessing={isProcessing}
+          onOpenFile={() => processCommand('open')}
+          onCopyContent={copyTerminalContent}
+          onClearTerminal={clearTerminal}
+          onClose={onClose}
+        />
         
-        {/* Terminal content */}
-        <div 
-          ref={terminalRef}
-          className={`flex-grow overflow-auto p-2 font-mono text-sm ${
-            theme === 'dark' ? 'bg-[#1e1a17] text-[#f3ebe7]' : 'bg-[#fefaf8] text-gray-900'
-          }`}
-        >
-          {commandHistory.map((entry) => (
-            <div key={entry.id} className="mb-3">
-              <div className="flex items-center">
-                <span className={theme === 'dark' ? 'text-[#e86f42]' : 'text-[#e05d30]'}>$</span>
-                <span className="ml-2">{entry.command}</span>
-                <span className="ml-2 text-xs opacity-50">
-                  {entry.timestamp.toLocaleTimeString()}
-                </span>
-              </div>
-              <div className="mt-1 ml-4 whitespace-pre-wrap">
-                {entry.isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 size={12} className="animate-spin" />
-                    <span>{entry.output}</span>
-                  </div>
-                ) : entry.output}
-              </div>
-            </div>
-          ))}
-        </div>
+        <TerminalContent
+          theme={theme}
+          commandHistory={commandHistory}
+          terminalRef={terminalRef}
+        />
         
-        {/* Terminal input */}
-        <div 
-          className={`flex items-center p-2 border-t ${
-            theme === 'dark' ? 'border-[#3e3632] bg-[#262220]' : 'border-[#efe0d9] bg-white'
-          }`}
-          onClick={() => inputRef.current?.focus()}
-        >
-          <ChevronRight 
-            size={16} 
-            className={theme === 'dark' ? 'text-[#e86f42]' : 'text-[#e05d30]'} 
-          />
-          <input
-            ref={inputRef}
-            type="text"
-            value={currentCommand}
-            onChange={(e) => setCurrentCommand(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className={`flex-grow ml-2 bg-transparent outline-none ${
-              theme === 'dark' ? 'text-[#f3ebe7]' : 'text-gray-900'
-            }`}
-            placeholder={isProcessing ? "Processing command..." : "Type a command... (try 'help')"}
-            autoFocus
-            disabled={isProcessing}
-          />
-        </div>
+        <TerminalInput
+          theme={theme}
+          currentCommand={currentCommand}
+          setCurrentCommand={setCurrentCommand}
+          handleKeyDown={handleKeyDown}
+          isProcessing={isProcessing}
+          inputRef={inputRef}
+        />
       </div>
       
       <style jsx>{`
