@@ -1,5 +1,7 @@
 import { Program } from "@/types";
 import { useState } from "react";
+import { getNodeColor } from "./utils/theme";
+import CollapsibleSection from "./ui/CollapsibleSection";
 
 export default function ASTViewer({
   program,
@@ -27,65 +29,21 @@ export default function ASTViewer({
         </div>
 
         {program.declarations.length > 0 && (
-          <ASTSection title="Declarations" theme={theme}>
+          <CollapsibleSection title="Declarations" theme={theme}>
             {program.declarations.map((decl, index) => (
               <ASTNode key={`decl-${index}`} node={decl} theme={theme} />
             ))}
-          </ASTSection>
+          </CollapsibleSection>
         )}
 
         {program.statements.length > 0 && (
-          <ASTSection title="Statements" theme={theme}>
+          <CollapsibleSection title="Statements" theme={theme}>
             {program.statements.map((stmt, index) => (
               <ASTNode key={`stmt-${index}`} node={stmt} theme={theme} />
             ))}
-          </ASTSection>
+          </CollapsibleSection>
         )}
       </div>
-    </div>
-  );
-}
-
-function ASTSection({
-  title,
-  children,
-  theme,
-}: {
-  title: string;
-  children: React.ReactNode;
-  theme: "dark" | "light";
-}) {
-  const [collapsed, setCollapsed] = useState(false);
-
-  return (
-    <div className="mb-4">
-      <div
-        className={`flex items-center cursor-pointer p-2 rounded-md ${
-          theme === "dark" ? "hover:bg-[#312c28]" : "hover:bg-[#fff1ec]"
-        }`}
-        onClick={() => setCollapsed(!collapsed)}
-      >
-        <span
-          className={`mr-2 ${collapsed ? "transform rotate-0" : "transform rotate-90"}`}
-        >
-          ▶
-        </span>
-        <h4
-          className={`text-md font-semibold ${theme === "dark" ? "text-[#d9cec9]" : "text-[#495057]"}`}
-        >
-          {title}
-        </h4>
-      </div>
-
-      {!collapsed && (
-        <div
-          className={`pl-6 border-l-2 ml-2 mt-2 mb-4 space-y-2 ${
-            theme === "dark" ? "border-[#3e3632]" : "border-[#efe0d9]"
-          }`}
-        >
-          {children}
-        </div>
-      )}
     </div>
   );
 }
@@ -265,36 +223,4 @@ function ASTNode({
       )}
     </div>
   );
-}
-
-function getNodeColor(kind: string, theme: "dark" | "light"): string {
-  switch (kind) {
-    case "Variable":
-    case "VariableWithInit":
-    case "Identifier":
-      return theme === "dark" ? "text-[#fb8f67]" : "text-[#a84424]";
-    case "Array":
-    case "ArrayWithInit":
-    case "ArrayAccess":
-      return theme === "dark" ? "text-[#ffb86c]" : "text-[#ed7d39]";
-    case "Constant":
-      return theme === "dark" ? "text-[#f39c78]" : "text-[#cb502a]";
-    case "Assignment":
-      return theme === "dark" ? "text-[#f39c78]" : "text-[#e05d30]";
-    case "IfThen":
-    case "IfThenElse":
-    case "DoWhile":
-    case "For":
-      return theme === "dark" ? "text-[#e86f42]" : "text-[#e05d30]";
-    case "Input":
-    case "Output":
-      return theme === "dark" ? "text-[#ffb86c]" : "text-[#ed7d39]";
-    case "BinaryOp":
-    case "UnaryOp":
-      return theme === "dark" ? "text-[#fa5252]" : "text-[#e03131]";
-    case "Literal":
-      return theme === "dark" ? "text-[#f39c78]" : "text-[#cb502a]";
-    default:
-      return theme === "dark" ? "text-[#d9cec9]" : "text-[#495057]";
-  }
 }

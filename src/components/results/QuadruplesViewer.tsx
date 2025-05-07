@@ -1,5 +1,6 @@
 import { Operand, Quadruple, QuadrupleProgram } from "@/types";
-import React, { useState } from "react";
+import { useState } from "react";
+import { filterQuadruples } from "./utils/filters";
 
 interface QuadruplesViewerProps {
   program: QuadrupleProgram;
@@ -14,13 +15,7 @@ export default function QuadruplesViewer({
 }: QuadruplesViewerProps) {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const { quadruples, next_temp, next_label } = program;
-
-  const filterQuadruples = (quadruples: Quadruple[]) => {
-    if (!searchTerm) return quadruples;
-    return quadruples.filter((quad) =>
-      JSON.stringify(quad).toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  };
+  const filteredQuadruples = filterQuadruples(quadruples, searchTerm);
 
   const renderOperand = (operand: Operand) => {
     switch (operand.type) {
@@ -276,8 +271,6 @@ export default function QuadruplesViewer({
       </div>
     );
   };
-
-  const filteredQuadruples = filterQuadruples(quadruples);
 
   return (
     <div className="animate-fadeIn">

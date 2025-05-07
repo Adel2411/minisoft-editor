@@ -3,10 +3,10 @@
 import type { CompilationResult } from "@/types";
 import { useState } from "react";
 import { Search, Copy, Download } from "lucide-react";
-import ASTViewer from "./results/ASTViewer";
-import TokensViewer from "./results/TokensViewer";
-import SymbolsViewer from "./results/SymbolsViewer";
-import QuadruplesViewer from "./results/QuadruplesViewer";
+import ASTViewer from "./ASTViewer";
+import TokensViewer from "./TokensViewer";
+import SymbolsViewer from "./SymbolsViewer";
+import QuadruplesViewer from "./QuadruplesViewer";
 
 interface ResultPanelProps {
   result: CompilationResult;
@@ -60,6 +60,49 @@ export default function ResultPanel({
     URL.revokeObjectURL(url);
   };
 
+  // Function to get active tab content and actions
+  const getActiveTabInfo = () => {
+    switch (activeTab) {
+      case "tokens":
+        return {
+          title: "Tokens",
+          content: <TokensViewer tokens={result.tokens} theme={theme} searchTerm={searchTerm} />,
+          copy: () => copyToClipboard(JSON.stringify(result.tokens, null, 2)),
+          download: () => downloadAsFile(JSON.stringify(result.tokens, null, 2), "tokens.json")
+        };
+      case "ast":
+        return {
+          title: "Abstract Syntax Tree",
+          content: <ASTViewer program={result.ast} theme={theme} />,
+          copy: () => copyToClipboard(JSON.stringify(result.ast, null, 2)),
+          download: () => downloadAsFile(JSON.stringify(result.ast, null, 2), "ast.json")
+        };
+      case "symbols":
+        return {
+          title: "Symbol Table",
+          content: <SymbolsViewer symbolTable={result.symbol_table} theme={theme} searchTerm={searchTerm} />,
+          copy: () => copyToClipboard(JSON.stringify(result.symbol_table, null, 2)),
+          download: () => downloadAsFile(JSON.stringify(result.symbol_table, null, 2), "symbols.json")
+        };
+      case "quadruples":
+        return {
+          title: "Quadruples",
+          content: <QuadruplesViewer program={result.quadruples} theme={theme} searchTerm={searchTerm} />,
+          copy: () => copyToClipboard(JSON.stringify(result.quadruples, null, 2)),
+          download: () => downloadAsFile(JSON.stringify(result.quadruples, null, 2), "quadruples.json")
+        };
+      default:
+        return {
+          title: "",
+          content: null,
+          copy: () => {},
+          download: () => {}
+        };
+    }
+  };
+
+  const activeTabInfo = getActiveTabInfo();
+
   return (
     <div
       className={`h-full overflow-auto p-4 relative ${theme === "dark" ? "bg-[#262220]" : "bg-white"}`}
@@ -67,10 +110,7 @@ export default function ResultPanel({
       {/* Result toolbar */}
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">
-          {activeTab === "tokens" && "Tokens"}
-          {activeTab === "ast" && "Abstract Syntax Tree"}
-          {activeTab === "symbols" && "Symbol Table"}
-          {activeTab === "quadruples" && "Quadruples"}
+          {activeTabInfo.title}
         </h3>
         <div className="flex items-center gap-2">
           <button
@@ -79,23 +119,14 @@ export default function ResultPanel({
               theme === "dark"
                 ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
                 : "hover:bg-[#fff1ec] text-[#495057] hover:text-[#212529]"
-            }`}
+            } ${activeTab === 'ast' ? 'opacity-50 cursor-not-allowed' : ''}`}
             title="Search in results"
+            disabled={activeTab === 'ast'}
           >
             <Search size={16} />
           </button>
           <button
-            onClick={() => {
-              if (activeTab === "tokens") {
-                copyToClipboard(JSON.stringify(result.tokens, null, 2));
-              } else if (activeTab === "ast") {
-                copyToClipboard(JSON.stringify(result.ast, null, 2));
-              } else if (activeTab === "symbols") {
-                copyToClipboard(JSON.stringify(result.symbol_table, null, 2));
-              } else if (activeTab === "quadruples") {
-                copyToClipboard(JSON.stringify(result.quadruples, null, 2));
-              }
-            }}
+            onClick={activeTabInfo.copy}
             className={`p-1 rounded-md transition-colors ${
               theme === "dark"
                 ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
@@ -106,26 +137,7 @@ export default function ResultPanel({
             <Copy size={16} />
           </button>
           <button
-            onClick={() => {
-              if (activeTab === "tokens") {
-                downloadAsFile(
-                  JSON.stringify(result.tokens, null, 2),
-                  "tokens.json",
-                );
-              } else if (activeTab === "ast") {
-                downloadAsFile(JSON.stringify(result.ast, null, 2), "ast.json");
-              } else if (activeTab === "symbols") {
-                downloadAsFile(
-                  JSON.stringify(result.symbol_table, null, 2),
-                  "symbols.json",
-                );
-              } else if (activeTab === "quadruples") {
-                downloadAsFile(
-                  JSON.stringify(result.quadruples, null, 2),
-                  "quadruples.json",
-                );
-              }
-            }}
+            onClick={activeTabInfo.download}
             className={`p-1 rounded-md transition-colors ${
               theme === "dark"
                 ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
@@ -138,8 +150,8 @@ export default function ResultPanel({
         </div>
       </div>
 
-      {/* Search bar */}
-      {isSearchOpen && (
+      {/* Search bar - only show for tabs that support search */}
+      {isSearchOpen && activeTab !== 'ast' && (
         <div className="mb-4">
           <div
             className={`flex items-center px-3 py-2 rounded-md border ${
@@ -179,31 +191,7 @@ export default function ResultPanel({
         </div>
       )}
 
-      {activeTab === "tokens" && (
-        <TokensViewer
-          tokens={result.tokens}
-          theme={theme}
-          searchTerm={searchTerm}
-        />
-      )}
-
-      {activeTab === "ast" && <ASTViewer program={result.ast} theme={theme} />}
-
-      {activeTab === "symbols" && (
-        <SymbolsViewer
-          symbolTable={result.symbol_table}
-          theme={theme}
-          searchTerm={searchTerm}
-        />
-      )}
-
-      {activeTab === "quadruples" && (
-        <QuadruplesViewer
-          program={result.quadruples}
-          theme={theme}
-          searchTerm={searchTerm}
-        />
-      )}
+      {activeTabInfo.content}
     </div>
   );
 }

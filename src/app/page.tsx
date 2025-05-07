@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import type { CompilationErrors, CompilationResult } from "@/types";
 import Editor from "@/components/editor/CodeEditor";
-import ResultPanel from "@/components/ResultPanel";
+import ResultPanel from "@/components/results/ResultPanel";
 import FileModal from "@/components/FileModal";
 import {
   Code,
