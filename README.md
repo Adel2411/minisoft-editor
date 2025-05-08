@@ -48,14 +48,18 @@ This editor is designed to enhance the MiniSoft programming experience by provid
 ```
 minisoft-editor/
 ├── README.md
+├── LICENSE                   # MIT License
+├── next-env.d.ts             # Next.js type definitions
+├── index.html                # HTML entry point
 ├── src-tauri/                # Tauri backend
 │   ├── Cargo.toml
 │   ├── src/
 │   │   ├── main.rs           # Tauri entry point
 │   │   └── lib.rs            # Backend library code
-│   └── tauri.conf.json       # Tauri configuration
 ├── minisoft-compiler/        # MiniSoft compiler library
 │   ├── Cargo.toml
+│   ├── README.md
+│   ├── build.rs              # LALRPOP build script
 │   ├── src/
 │   │   ├── lexer/            # Lexical analysis
 │   │   ├── parser/           # Syntax analysis
@@ -65,19 +69,31 @@ minisoft-editor/
 │   │   ├── compiler.rs       # Main compiler module
 │   │   └── lib.rs            # Library entry point
 │   └── tests/                # Compiler tests
-├── src/                      # Next.js frontend
-│   ├── app/
+├── src/                      # Frontend source code
+│   ├── app/                  # Next.js app directory
 │   │   ├── layout.tsx        # Root layout
-│   │   └── page.tsx          # Main page
-│   ├── components/
-│   │   ├── CodeEditor.tsx    # Code editor component
-│   │   ├── ErrorDisplay.tsx  # Error display component
-│   │   ├── ResultsDisplay.tsx # Results container
-│   │   └── results/          # Visualization components
+│   │   └── page.tsx          # Main page with editor & results
+│   ├── components/           # Shared components
+│   │   ├── ErrorReporter.tsx # Error display component
+│   │   ├── FileModal.tsx     # File management modal
+│   ├── features/             # Feature-specific components
+│   │   ├── editor/           # Code editor components
+│   │   │   ├── CodeEditor.tsx # Main editor component
+│   │   │   ├── components/   # Editor subcomponents
+│   │   │   ├── hooks/        # Editor hooks
+│   │   │   ├── styles/       # Editor-specific styles
+│   │   │   ├── types/        # Editor type definitions
+│   │   │   └── utils/        # Editor utilities
+│   │   ├── results/          # Result visualization components
+│   │   │   ├── components/   # Visualization components
+│   │   │   └── utils/        # Result display utilities
+│   │   └── terminal/         # Terminal feature components
 │   ├── styles/
 │   │   └── globals.css       # Global styles
-│   └── types/                # TypeScript type definitions
+│   ├── types/                # TypeScript type definitions
+│   └── utils/                # Shared utilities
 ├── public/                   # Static assets
+├── screenshots/              # Documentation screenshots
 └── package.json              # Frontend dependencies
 ```
 
