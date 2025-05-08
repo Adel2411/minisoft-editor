@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { CommandItem } from '../types/EditorTypes';
+import { CommandItem } from '../types';
+
 
 export function useCommandPalette(commands: CommandItem[]) {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);

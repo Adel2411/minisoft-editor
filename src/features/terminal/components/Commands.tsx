@@ -1,5 +1,5 @@
 import React from 'react';
-import { exampleFilesMap } from './ExampleFiles';
+import { exampleFilesMap } from '../constants';
 
 export function generateHelpOutput(currentTheme: 'dark' | 'light') {
   const commandColor = currentTheme === 'dark' ? 'text-[#e86f42]' : 'text-[#e05d30]';

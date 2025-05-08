@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect, JSX } from 'react';
-import { TerminalProps, CommandEntry, FileOperation } from './terminal/types';
-import { exampleFilesMap } from './terminal/ExampleFiles';
-import { generateHelpOutput, generateFileListOutput } from './terminal/commands';
-import { dialog, fileSystem } from './terminal/FileSystem';
-import TerminalHeader from './terminal/ui/TerminalHeader';
-import TerminalContent from './terminal/ui/TerminalContent';
-import TerminalInput from './terminal/ui/TerminalInput';
+import { TerminalProps, CommandEntry, FileOperation } from './types';
+import { generateFileListOutput, generateHelpOutput } from './components/Commands';
+import { exampleFilesMap } from './constants';
+import { dialog, fileSystem } from './utils';
+import TerminalHeader from './components/TerminalHeader';
+import TerminalContent from './components/TerminalContent';
+import TerminalInput from './components/TerminalInput';
+
 
 const Terminal: React.FC<TerminalProps> = ({ 
   theme, 

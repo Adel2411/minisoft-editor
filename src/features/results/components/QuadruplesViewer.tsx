@@ -1,6 +1,6 @@
 import { Operand, Quadruple, QuadrupleProgram } from "@/types";
 import { useState } from "react";
-import { filterQuadruples } from "./utils/filters";
+import { filterQuadruples } from "../utils/filters";
 
 interface QuadruplesViewerProps {
   program: QuadrupleProgram;

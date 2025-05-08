@@ -1,7 +1,7 @@
 import { Program } from "@/types";
 import { useState } from "react";
-import { getNodeColor } from "./utils/theme";
-import CollapsibleSection from "./ui/CollapsibleSection";
+import CollapsibleSection from "./CollapsibleSection";
+import { getNodeColor } from "../utils/theme";
 
 export default function ASTViewer({
   program,

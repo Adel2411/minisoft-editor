@@ -1,6 +1,5 @@
-// Example files content
 export const exampleFilesMap: { [key: string]: string } = {
-  'factorial.ms': `MainPrgm Factorial;
+  "factorial.ms": `MainPrgm Factorial;
 Var
   let n: Int;
   let result: Int;
@@ -17,7 +16,7 @@ BeginPg
   output(result);  <!- Outputs: 120 -!>
 }
 EndPg;`,
-  'fibonacci.ms': `MainPrgm Fibonacci;
+  "fibonacci.ms": `MainPrgm Fibonacci;
 Var
   let n: Int = 10;
   let a: Int = 0;
@@ -37,13 +36,13 @@ BeginPg
   }
 }
 EndPg;`,
-  'hello_world.ms': `MainPrgm HelloWorld;
+  "hello_world.ms": `MainPrgm HelloWorld;
 BeginPg
 {
   output("Hello, World!");
 }
 EndPg;`,
-  'loops.ms': `MainPrgm Loops;
+  "loops.ms": `MainPrgm Loops;
 Var
   let i: Int;
   let sum: Int = 0;
@@ -55,7 +54,7 @@ BeginPg
   }
 }
 EndPg;`,
-  'conditionals.ms': `MainPrgm Conditionals;
+  "conditionals.ms": `MainPrgm Conditionals;
 Var
   let x: Int = 10;
   let y: Int = 20;
@@ -67,5 +66,5 @@ BeginPg
     output("y is greater than or equal to x");
   }
 }
-EndPg;`
+EndPg;`,
 };

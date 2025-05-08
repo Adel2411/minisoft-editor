@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import type { CompilationErrors, CompilationResult } from "@/types";
-import Editor from "@/components/editor/CodeEditor";
-import ResultPanel from "@/components/results/ResultPanel";
+import Editor from "@/features/editor/CodeEditor";
+import ResultPanel from "@/features/results/ResultPanel";
 import FileModal from "@/components/FileModal";
 import {
   Code,
@@ -20,7 +20,7 @@ import {
 import { invoke } from "@tauri-apps/api/core";
 import ErrorReporter from "@/components/ErrorReporter";
 import Image from "next/image";
-import Terminal from "@/components/Terminal";
+import Terminal from "@/features/terminal/Terminal";
 
 export default function Home() {
   const [code, setCode] = useState<string>(

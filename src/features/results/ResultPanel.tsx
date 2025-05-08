@@ -3,10 +3,10 @@
 import type { CompilationResult } from "@/types";
 import { useState } from "react";
 import { Search, Copy, Download } from "lucide-react";
-import ASTViewer from "./ASTViewer";
-import TokensViewer from "./TokensViewer";
-import SymbolsViewer from "./SymbolsViewer";
-import QuadruplesViewer from "./QuadruplesViewer";
+import ASTViewer from "./components/ASTViewer";
+import TokensViewer from "./components/TokensViewer";
+import SymbolsViewer from "./components/SymbolsViewer";
+import QuadruplesViewer from "./components/QuadruplesViewer";
 
 interface ResultPanelProps {
   result: CompilationResult;
@@ -66,37 +66,70 @@ export default function ResultPanel({
       case "tokens":
         return {
           title: "Tokens",
-          content: <TokensViewer tokens={result.tokens} theme={theme} searchTerm={searchTerm} />,
+          content: (
+            <TokensViewer
+              tokens={result.tokens}
+              theme={theme}
+              searchTerm={searchTerm}
+            />
+          ),
           copy: () => copyToClipboard(JSON.stringify(result.tokens, null, 2)),
-          download: () => downloadAsFile(JSON.stringify(result.tokens, null, 2), "tokens.json")
+          download: () =>
+            downloadAsFile(
+              JSON.stringify(result.tokens, null, 2),
+              "tokens.json",
+            ),
         };
       case "ast":
         return {
           title: "Abstract Syntax Tree",
           content: <ASTViewer program={result.ast} theme={theme} />,
           copy: () => copyToClipboard(JSON.stringify(result.ast, null, 2)),
-          download: () => downloadAsFile(JSON.stringify(result.ast, null, 2), "ast.json")
+          download: () =>
+            downloadAsFile(JSON.stringify(result.ast, null, 2), "ast.json"),
         };
       case "symbols":
         return {
           title: "Symbol Table",
-          content: <SymbolsViewer symbolTable={result.symbol_table} theme={theme} searchTerm={searchTerm} />,
-          copy: () => copyToClipboard(JSON.stringify(result.symbol_table, null, 2)),
-          download: () => downloadAsFile(JSON.stringify(result.symbol_table, null, 2), "symbols.json")
+          content: (
+            <SymbolsViewer
+              symbolTable={result.symbol_table}
+              theme={theme}
+              searchTerm={searchTerm}
+            />
+          ),
+          copy: () =>
+            copyToClipboard(JSON.stringify(result.symbol_table, null, 2)),
+          download: () =>
+            downloadAsFile(
+              JSON.stringify(result.symbol_table, null, 2),
+              "symbols.json",
+            ),
         };
       case "quadruples":
         return {
           title: "Quadruples",
-          content: <QuadruplesViewer program={result.quadruples} theme={theme} searchTerm={searchTerm} />,
-          copy: () => copyToClipboard(JSON.stringify(result.quadruples, null, 2)),
-          download: () => downloadAsFile(JSON.stringify(result.quadruples, null, 2), "quadruples.json")
+          content: (
+            <QuadruplesViewer
+              program={result.quadruples}
+              theme={theme}
+              searchTerm={searchTerm}
+            />
+          ),
+          copy: () =>
+            copyToClipboard(JSON.stringify(result.quadruples, null, 2)),
+          download: () =>
+            downloadAsFile(
+              JSON.stringify(result.quadruples, null, 2),
+              "quadruples.json",
+            ),
         };
       default:
         return {
           title: "",
           content: null,
           copy: () => {},
-          download: () => {}
+          download: () => {},
         };
     }
   };
@@ -109,9 +142,7 @@ export default function ResultPanel({
     >
       {/* Result toolbar */}
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">
-          {activeTabInfo.title}
-        </h3>
+        <h3 className="text-lg font-semibold">{activeTabInfo.title}</h3>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -119,9 +150,9 @@ export default function ResultPanel({
               theme === "dark"
                 ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
                 : "hover:bg-[#fff1ec] text-[#495057] hover:text-[#212529]"
-            } ${activeTab === 'ast' ? 'opacity-50 cursor-not-allowed' : ''}`}
+            } ${activeTab === "ast" ? "opacity-50 cursor-not-allowed" : ""}`}
             title="Search in results"
-            disabled={activeTab === 'ast'}
+            disabled={activeTab === "ast"}
           >
             <Search size={16} />
           </button>
@@ -151,7 +182,7 @@ export default function ResultPanel({
       </div>
 
       {/* Search bar - only show for tabs that support search */}
-      {isSearchOpen && activeTab !== 'ast' && (
+      {isSearchOpen && activeTab !== "ast" && (
         <div className="mb-4">
           <div
             className={`flex items-center px-3 py-2 rounded-md border ${

@@ -1,7 +1,7 @@
 import type { Symbol } from "@/types";
-import DataTable from "./ui/DataTable";
-import { filterSymbols } from "./utils/filters";
-import { getSymbolKindColor } from "./utils/theme";
+import { filterSymbols } from "../utils/filters";
+import { getSymbolKindColor } from "../utils/theme";
+import DataTable from "./DataTable";
 
 interface SymbolsViewerProps {
   symbolTable: Symbol[];

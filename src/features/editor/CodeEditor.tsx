@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import "./CodeEditor.css"; // Import CSS for syntax highlighting
+import "./styles/CodeEditor.css";
 import { tokenize } from "@/utils/tokenizer";
 
 // Import types
-import { EditorProps, CursorPosition, CommandItem } from "./types/EditorTypes";
+import { EditorProps, CursorPosition, CommandItem } from "./types";
 
 // Import hooks
 import { useEditorSearch } from "./hooks/useEditorSearch";
@@ -34,7 +34,10 @@ export default function Editor({
 
   // State
   const [lineCount, setLineCount] = useState<number>(2);
-  const [cursorPosition, setCursorPosition] = useState<CursorPosition>({ line: 1, column: 1 });
+  const [cursorPosition, setCursorPosition] = useState<CursorPosition>({
+    line: 1,
+    column: 1,
+  });
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [foldedLines, setFoldedLines] = useState<number[]>([]);
   const [highlightedCode, setHighlightedCode] = useState<string>("");
@@ -44,25 +47,25 @@ export default function Editor({
   const [indentSize, setIndentSize] = useState<number>(2);
 
   // Custom hooks
-  const { 
-    searchState, 
-    setSearchState, 
-    getSearchMatches, 
-    executeSearch, 
-    findNext, 
+  const {
+    searchState,
+    setSearchState,
+    getSearchMatches,
+    executeSearch,
+    findNext,
     findPrevious,
     replaceMatch,
     replaceAll,
     toggleSearchPanel,
-    toggleReplacePanel
+    toggleReplacePanel,
   } = useEditorSearch({ code, setCursorPosition, textareaRef });
 
-  const { 
-    isFileModified, 
-    undo: handleUndo, 
-    redo: handleRedo, 
-    saveFile, 
-    updateCode 
+  const {
+    isFileModified,
+    undo: handleUndo,
+    redo: handleRedo,
+    saveFile,
+    updateCode,
   } = useEditorHistory({ initialCode: code, code, setCode });
 
   const {
@@ -73,33 +76,68 @@ export default function Editor({
     duplicateLines,
     deleteLines,
     moveLines,
-    handleBracketPairs
-  } = useCodeOperations({ 
-    code, 
-    indentSize, 
-    textareaRef, 
-    updateCode, 
-    lineCount, 
-    setCursorPosition 
+    handleBracketPairs,
+  } = useCodeOperations({
+    code,
+    indentSize,
+    textareaRef,
+    updateCode,
+    lineCount,
+    setCursorPosition,
   });
 
   // Define commands for command palette - memoized to prevent infinite rendering
-  const commands = useMemo<CommandItem[]>(() => [
-    { id: 'search', name: 'Search', shortcut: 'Ctrl+F', action: () => toggleSearchPanel(true) },
-    { id: 'replace', name: 'Find and Replace', shortcut: 'Ctrl+H', action: () => { 
-      toggleSearchPanel(true); 
-      toggleReplacePanel(true); 
-    }},
-    { id: 'save', name: 'Save File', shortcut: 'Ctrl+S', action: saveFile },
-    { id: 'run', name: 'Run Code', shortcut: 'Ctrl+Enter', action: onCompile },
-    { id: 'toggle-comment', name: 'Toggle Comment', shortcut: 'Ctrl+/', action: toggleComment },
-    { id: 'go-to-line', name: 'Go to Line', shortcut: 'Ctrl+G', action: () => {
-      const lineNumber = prompt('Go to line:');
-      if (lineNumber && !isNaN(parseInt(lineNumber))) {
-        goToLine(parseInt(lineNumber));
-      }
-    }}
-  ], [toggleSearchPanel, toggleReplacePanel, saveFile, onCompile, toggleComment, goToLine]);
+  const commands = useMemo<CommandItem[]>(
+    () => [
+      {
+        id: "search",
+        name: "Search",
+        shortcut: "Ctrl+F",
+        action: () => toggleSearchPanel(true),
+      },
+      {
+        id: "replace",
+        name: "Find and Replace",
+        shortcut: "Ctrl+H",
+        action: () => {
+          toggleSearchPanel(true);
+          toggleReplacePanel(true);
+        },
+      },
+      { id: "save", name: "Save File", shortcut: "Ctrl+S", action: saveFile },
+      {
+        id: "run",
+        name: "Run Code",
+        shortcut: "Ctrl+Enter",
+        action: onCompile,
+      },
+      {
+        id: "toggle-comment",
+        name: "Toggle Comment",
+        shortcut: "Ctrl+/",
+        action: toggleComment,
+      },
+      {
+        id: "go-to-line",
+        name: "Go to Line",
+        shortcut: "Ctrl+G",
+        action: () => {
+          const lineNumber = prompt("Go to line:");
+          if (lineNumber && !isNaN(parseInt(lineNumber))) {
+            goToLine(parseInt(lineNumber));
+          }
+        },
+      },
+    ],
+    [
+      toggleSearchPanel,
+      toggleReplacePanel,
+      saveFile,
+      onCompile,
+      toggleComment,
+      goToLine,
+    ],
+  );
 
   const {
     isCommandPaletteOpen,
@@ -108,7 +146,7 @@ export default function Editor({
     setCommandInput,
     commandSuggestions,
     executeCommand,
-    openCommandPalette
+    openCommandPalette,
   } = useCommandPalette(commands);
 
   // Update line numbers when code changes
@@ -135,15 +173,17 @@ export default function Editor({
   // Tokenize and highlight the code whenever it changes
   useEffect(() => {
     const tokens = tokenize(code);
-    
-    const highlighted = tokens.map((token) => {
-      // Escape HTML characters to prevent them from being interpreted as HTML tags
-      const escapedValue = token.value
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
 
-      return `<span class="token ${token.type}">${escapedValue}</span>`;
-    }).join("");
+    const highlighted = tokens
+      .map((token) => {
+        // Escape HTML characters to prevent them from being interpreted as HTML tags
+        const escapedValue = token.value
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+
+        return `<span class="token ${token.type}">${escapedValue}</span>`;
+      })
+      .join("");
     setHighlightedCode(highlighted);
   }, [code]);
 
@@ -250,7 +290,10 @@ export default function Editor({
       }
 
       // Command palette
-      if ((e.ctrlKey && e.shiftKey && e.key === "P") || (e.ctrlKey && e.key === "p")) {
+      if (
+        (e.ctrlKey && e.shiftKey && e.key === "P") ||
+        (e.ctrlKey && e.key === "p")
+      ) {
         e.preventDefault();
         openCommandPalette();
       }
@@ -280,7 +323,7 @@ export default function Editor({
         toggleComment();
       }
 
-      // Indent/outdent 
+      // Indent/outdent
       if (e.key === "Tab") {
         if (e.shiftKey) {
           e.preventDefault();
@@ -294,11 +337,11 @@ export default function Editor({
       // Zoom in/out
       if (e.ctrlKey && (e.key === "+" || e.key === "=")) {
         e.preventDefault();
-        setFontSizeMultiplier(prev => Math.min(prev + 0.1, 2.0));
+        setFontSizeMultiplier((prev) => Math.min(prev + 0.1, 2.0));
       }
       if (e.ctrlKey && e.key === "-") {
         e.preventDefault();
-        setFontSizeMultiplier(prev => Math.max(prev - 0.1, 0.5));
+        setFontSizeMultiplier((prev) => Math.max(prev - 0.1, 0.5));
       }
       if (e.ctrlKey && e.key === "0") {
         e.preventDefault();
@@ -333,7 +376,9 @@ export default function Editor({
   }, [code, onCompile, selectedText]);
 
   // Enhanced auto-pairing of brackets
-  const handleTextareaKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleTextareaKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>,
+  ) => {
     const textarea = e.currentTarget;
     const { selectionStart, selectionEnd } = textarea;
     const currentSelectedText = code.substring(selectionStart, selectionEnd);
@@ -358,7 +403,7 @@ export default function Editor({
       } ${isFileModified ? "modified" : ""}`}
     >
       {/* Editor toolbar */}
-      <EditorToolbar 
+      <EditorToolbar
         theme={theme}
         isFileModified={isFileModified}
         onSearchClick={() => toggleSearchPanel(!searchState.isSearchOpen)}
@@ -377,13 +422,21 @@ export default function Editor({
 
       {/* Search panel */}
       {searchState.isSearchOpen && (
-        <SearchPanel 
+        <SearchPanel
           theme={theme}
           searchState={searchState}
-          setSearchTerm={(term) => setSearchState({...searchState, searchTerm: term})}
-          setReplaceTerm={(term) => setSearchState({...searchState, replaceTerm: term})}
-          setIsRegexSearch={(value) => setSearchState({...searchState, isRegexSearch: value})}
-          setIsCaseSensitive={(value) => setSearchState({...searchState, isCaseSensitive: value})}
+          setSearchTerm={(term) =>
+            setSearchState({ ...searchState, searchTerm: term })
+          }
+          setReplaceTerm={(term) =>
+            setSearchState({ ...searchState, replaceTerm: term })
+          }
+          setIsRegexSearch={(value) =>
+            setSearchState({ ...searchState, isRegexSearch: value })
+          }
+          setIsCaseSensitive={(value) =>
+            setSearchState({ ...searchState, isCaseSensitive: value })
+          }
           executeSearch={executeSearch}
           findPrevious={findPrevious}
           findNext={findNext}
@@ -407,7 +460,7 @@ export default function Editor({
       )}
 
       {/* Command palette */}
-      <CommandPalette 
+      <CommandPalette
         theme={theme}
         isOpen={isCommandPaletteOpen}
         commandInput={commandInput}
@@ -425,7 +478,7 @@ export default function Editor({
         }}
       >
         {/* Line numbers */}
-        <LineNumbers 
+        <LineNumbers
           theme={theme}
           code={code}
           lineNumbers={renderLineNumbers()}
@@ -435,7 +488,7 @@ export default function Editor({
         />
 
         {/* Code editor area */}
-        <EditorContent 
+        <EditorContent
           theme={theme}
           highlightedCode={highlightedCode}
           code={code}
@@ -452,7 +505,7 @@ export default function Editor({
       </div>
 
       {/* Status bar */}
-      <StatusBar 
+      <StatusBar
         theme={theme}
         cursorPosition={cursorPosition}
         selectedText={selectedText}

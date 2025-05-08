@@ -1,4 +1,4 @@
-import { CursorPosition } from '../types/EditorTypes';
+import { CursorPosition } from "../types";
 
 export const calculateCursorPosition = (code: string, cursorPos: number): CursorPosition => {
   const textBeforeCursor = code.substring(0, cursorPos);

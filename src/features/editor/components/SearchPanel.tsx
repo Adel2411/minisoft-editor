@@ -1,6 +1,6 @@
 import React from "react";
 import { Search as SearchIcon, Replace as ReplaceIcon } from "lucide-react";
-import { SearchState } from "../types/EditorTypes";
+import { SearchState } from "../types";
 
 interface SearchPanelProps {
   theme: "dark" | "light";

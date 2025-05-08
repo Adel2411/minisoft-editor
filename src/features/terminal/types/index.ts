@@ -1,7 +1,7 @@
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
 export interface TerminalProps {
-  theme: 'dark' | 'light';
+  theme: "dark" | "light";
   isVisible: boolean;
   onClose: () => void;
   compileCode: (code: string, filePath?: string) => Promise<void>;
@@ -17,13 +17,13 @@ export interface CommandEntry {
 }
 
 export interface FileOperation {
-  status: 'pending' | 'success' | 'error';
+  status: "pending" | "success" | "error";
   message?: string;
   filePath?: string;
 }
 
 export interface TerminalHeaderProps {
-  theme: 'dark' | 'light';
+  theme: "dark" | "light";
   isProcessing: boolean;
   onOpenFile: () => void;
   onCopyContent: () => void;
@@ -32,13 +32,13 @@ export interface TerminalHeaderProps {
 }
 
 export interface TerminalContentProps {
-  theme: 'dark' | 'light';
+  theme: "dark" | "light";
   commandHistory: CommandEntry[];
   terminalRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export interface TerminalInputProps {
-  theme: 'dark' | 'light';
+  theme: "dark" | "light";
   currentCommand: string;
   setCurrentCommand: (cmd: string) => void;
   handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;

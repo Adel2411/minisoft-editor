@@ -1,5 +1,5 @@
 import React from 'react';
-import { CommandItem } from '../types/EditorTypes';
+import { CommandItem } from '../types';
 
 interface CommandPaletteProps {
   theme: "dark" | "light";

@@ -1,5 +1,6 @@
 import React from 'react';
-import { CursorPosition } from '../types/EditorTypes';
+import { CursorPosition } from '../types';
+
 
 interface StatusBarProps {
   theme: "dark" | "light";
