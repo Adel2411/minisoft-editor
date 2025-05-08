@@ -21,6 +21,7 @@ import { invoke } from "@tauri-apps/api/core";
 import ErrorReporter from "@/components/ErrorReporter";
 import Image from "next/image";
 import Terminal from "@/features/terminal/Terminal";
+import SettingsModal from "@/features/settings/SettingsModal";
 
 export default function Home() {
   const [code, setCode] = useState<string>(
@@ -86,6 +87,10 @@ EndPg;`,
   const [currentFileName, setCurrentFileName] = useState<string | null>(null);
   const [error, setError] = useState<CompilationErrors | null>(null);
   const [isTerminalOpen, setIsTerminalOpen] = useState<boolean>(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
+  const [fontSizeMultiplier, setFontSizeMultiplier] = useState<number>(1);
+  const [indentSize, setIndentSize] = useState<number>(2);
+  const [showMinimap, setShowMinimap] = useState<boolean>(true);
 
   // Set editor as ready after initial render
   useEffect(() => {
@@ -375,6 +380,7 @@ EndPg;`,
             </button>
 
             <button
+              onClick={() => setIsSettingsModalOpen(true)}
               className={`p-2 rounded-md transition-colors ${
                 theme === "dark"
                   ? "hover:bg-[#312c28] text-[#d9cec9]"
@@ -419,6 +425,9 @@ EndPg;`,
               setCode={setCode}
               theme={theme}
               onCompile={compileCode}
+              fontSizeMultiplier={fontSizeMultiplier}
+              indentSize={indentSize}
+              showMinimap={showMinimap}
             />
           )}
         </div>
@@ -517,6 +526,17 @@ EndPg;`,
           await compileCode();
         }}
         setCurrentFileName={setCurrentFileName}
+      />
+
+      {/* Settings modal */}
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        theme={theme}
+        setTheme={setTheme}
+        setFontSizeMultiplier={setFontSizeMultiplier}
+        setIndentSize={setIndentSize}
+        setShowMinimap={setShowMinimap}
       />
     </main>
   );

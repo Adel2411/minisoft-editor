@@ -3,6 +3,9 @@ export interface EditorProps {
   setCode: (code: string) => void;
   theme: "dark" | "light";
   onCompile: () => void;
+  fontSizeMultiplier?: number;
+  indentSize?: number;
+  showMinimap?: boolean;
 }
 
 export interface HistoryState {

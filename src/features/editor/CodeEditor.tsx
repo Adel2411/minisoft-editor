@@ -26,6 +26,9 @@ export default function Editor({
   setCode,
   theme,
   onCompile,
+  fontSizeMultiplier: initialFontSize,
+  indentSize: initialIndent,
+  showMinimap: initialMinimap,
 }: EditorProps) {
   // Refs
   const editorRef = useRef<HTMLDivElement>(null);
@@ -42,9 +45,28 @@ export default function Editor({
   const [foldedLines, setFoldedLines] = useState<number[]>([]);
   const [highlightedCode, setHighlightedCode] = useState<string>("");
   const [selectedText, setSelectedText] = useState<string>("");
-  const [fontSizeMultiplier, setFontSizeMultiplier] = useState<number>(1);
-  const [showMinimap, setShowMinimap] = useState<boolean>(true);
-  const [indentSize, setIndentSize] = useState<number>(2);
+  const [fontSizeMultiplier, setFontSizeMultiplier] = useState<number>(initialFontSize || 1);
+  const [indentSize, setIndentSize] = useState<number>(initialIndent || 2);
+  const [showMinimap, setShowMinimap] = useState<boolean>(initialMinimap !== undefined ? initialMinimap : true);
+
+  // Use effect to update state when props change
+  useEffect(() => {
+    if (initialFontSize !== undefined) {
+      setFontSizeMultiplier(initialFontSize);
+    }
+  }, [initialFontSize]);
+
+  useEffect(() => {
+    if (initialIndent !== undefined) {
+      setIndentSize(initialIndent);
+    }
+  }, [initialIndent]);
+
+  useEffect(() => {
+    if (initialMinimap !== undefined) {
+      setShowMinimap(initialMinimap);
+    }
+  }, [initialMinimap]);
 
   // Custom hooks
   const {
