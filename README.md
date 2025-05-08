@@ -53,48 +53,72 @@ minisoft-editor/
 ├── index.html                # HTML entry point
 ├── src-tauri/                # Tauri backend
 │   ├── Cargo.toml
-│   ├── src/
-│   │   ├── main.rs           # Tauri entry point
-│   │   └── lib.rs            # Backend library code
+│   └── src/                  # Backend source code
 ├── minisoft-compiler/        # MiniSoft compiler library
 │   ├── Cargo.toml
 │   ├── README.md
-│   ├── build.rs              # LALRPOP build script
-│   ├── src/
+│   ├── src/                  # Compiler implementation
 │   │   ├── lexer/            # Lexical analysis
+│   │   │   ├── mod.rs        # Lexer module exports
+│   │   │   ├── token.rs      # Token definitions
+│   │   │   └── lexer.rs      # Logos lexer implementation
 │   │   ├── parser/           # Syntax analysis
+│   │   │   ├── mod.rs        # Parser module exports
+│   │   │   ├── ast.rs        # Abstract Syntax Tree definitions
+│   │   │   ├── grammar.lalrpop # LALRPOP grammar definition
+│   │   │   └── error.rs      # Parser error handling
 │   │   ├── semantics/        # Semantic analysis
+│   │   │   ├── mod.rs        # Semantics module exports
+│   │   │   ├── analyzer.rs   # Semantic analyzer main implementation
+│   │   │   ├── symbol_table.rs # Symbol table implementation
+│   │   │   └── error.rs      # Semantic error handling
 │   │   ├── codegen/          # Code generation
-│   │   ├── error_reporter/   # Error handling
-│   │   ├── compiler.rs       # Main compiler module
-│   │   └── lib.rs            # Library entry point
-│   └── tests/                # Compiler tests
+│   │   │   ├── mod.rs        # Code generation module exports
+│   │   │   └── quadruple.rs  # Quadruple intermediate representation
+│   │   └── error_reporter/   # Error handling & reporting
+│   └── tests/                # Compiler test suite
 ├── src/                      # Frontend source code
 │   ├── app/                  # Next.js app directory
-│   │   ├── layout.tsx        # Root layout
-│   │   └── page.tsx          # Main page with editor & results
-│   ├── components/           # Shared components
+│   │   ├── layout.tsx        # Root layout component
+│   │   └── page.tsx          # Main application page
+│   ├── components/           # Shared UI components
 │   │   ├── ErrorReporter.tsx # Error display component
-│   │   ├── FileModal.tsx     # File management modal
-│   ├── features/             # Feature-specific components
-│   │   ├── editor/           # Code editor components
-│   │   │   ├── CodeEditor.tsx # Main editor component
-│   │   │   ├── components/   # Editor subcomponents
-│   │   │   ├── hooks/        # Editor hooks
-│   │   │   ├── styles/       # Editor-specific styles
-│   │   │   ├── types/        # Editor type definitions
-│   │   │   └── utils/        # Editor utilities
-│   │   ├── results/          # Result visualization components
-│   │   │   ├── components/   # Visualization components
-│   │   │   └── utils/        # Result display utilities
-│   │   └── terminal/         # Terminal feature components
-│   ├── styles/
-│   │   └── globals.css       # Global styles
-│   ├── types/                # TypeScript type definitions
+│   │   └── FileModal.tsx     # File management modal
+│   ├── features/             # Feature modules
+│   │   ├── editor/           # Code editor feature
+│   │   │   ├── CodeEditor.tsx          # Main editor component
+│   │   │   ├── components/             # Editor UI components
+│   │   │   ├── hooks/                  # Editor-specific hooks
+│   │   │   └── styles/                 # Editor styling
+│   │   ├── results/          # Results visualization feature
+│   │   │   ├── ResultPanel.tsx         # Main results panel
+│   │   │   ├── components/             # Result view components
+│   │   │   │   ├── ASTViewer.tsx       # AST visualization
+│   │   │   │   ├── SymbolsViewer.tsx   # Symbol table display
+│   │   │   │   └── CollapsibleSection.tsx # UI helper component
+│   │   │   └── utils/                  # Result formatting utilities
+│   │   ├── settings/         # Settings feature
+│   │   │   └── SettingsModal.tsx       # Settings dialog component
+│   │   └── terminal/         # Terminal feature
+│   │       ├── Terminal.tsx            # Main terminal component
+│   │       ├── components/             # Terminal UI components
+│   │       ├── constants/              # Example files & commands
+│   │       ├── types/                  # Terminal type definitions
+│   │       └── utils/                  # File system utilities
+│   ├── styles/               # Global styles
+│   │   └── globals.css       # Global CSS styles
+│   ├── types/                # Type definitions
+│   │   ├── index.ts          # Type exports
+│   │   ├── ast.ts            # AST type definitions
+│   │   ├── common.ts         # Common type definitions
+│   │   ├── compiler.ts       # Compiler-related types
+│   │   ├── errors.ts         # Error type definitions
+│   │   └── quadruple.ts      # Intermediate representation types
 │   └── utils/                # Shared utilities
+│       └── theme.ts          # Theme utility functions
 ├── public/                   # Static assets
-├── screenshots/              # Documentation screenshots
-└── package.json              # Frontend dependencies
+│   └── minisoft-icon.ico     # Application icon
+└── screenshots/              # Documentation screenshots
 ```
 
 ## Installation
