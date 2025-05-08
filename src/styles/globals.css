@@ -20,6 +20,7 @@ body {
 
 /* Theme variables */
 :root {
+  /* Base theme colors */
   --bg-primary: #fefaf8;
   --bg-secondary: #ffffff;
   --bg-tertiary: #fff1ec;
@@ -33,10 +34,46 @@ body {
   --success-color: #f39c78;
   --warning-color: #ed7d39;
   --info-color: #a84424;
+  
+  /* Syntax highlighting - Light theme */
+  --syntax-keyword: #d94e1f;
+  --syntax-control: #9c3400;
+  --syntax-io: #b86600;
+  --syntax-preprocessor: #e05d00;
+  --syntax-constant: #008484;
+  --syntax-punctuation: #5a6268;
+  --syntax-bracket: #7c8288;
+  --syntax-operator: #c22d2d;
+  --syntax-logical: #7a4988;
+  --syntax-number: #0a6e31;
+  --syntax-string: #af4700;
+  --syntax-identifier: #495057;
+  --syntax-comment: #8a8276;
+  
+  /* Scrollbar colors */
+  --scrollbar-track: #f9efe9;
+  --scrollbar-thumb: #e05d30;
+  --scrollbar-thumb-hover: #cb502a;
+  
+  /* Selection colors */
+  --selection-bg: rgba(224, 93, 48, 0.2);
+  --selection-text: #212529;
+  
+  /* Editor highlight */
+  --editor-line-highlight: rgba(224, 93, 48, 0.1);
+  
+  /* Token background colors */
+  --token-bg-keyword: #fff1ec;
+  --token-bg-identifier: #fef5f1;
+  --token-bg-number: #fdf8f6;
+  --token-bg-string: #fef6f2;
+  --token-bg-operator: #feece5;
+  --token-bg-default: #fff1ec;
 }
 
 /* Dark theme */
 .dark-theme {
+  /* Base theme colors */
   --bg-primary: #1e1a17;
   --bg-secondary: #262220;
   --bg-tertiary: #312c28;
@@ -50,6 +87,41 @@ body {
   --success-color: #f39c78;
   --warning-color: #ffb86c;
   --info-color: #fb8f67;
+  
+  /* Syntax highlighting - Dark theme */
+  --syntax-keyword: #ff875f;
+  --syntax-control: #f5694b;
+  --syntax-io: #ffd282;
+  --syntax-preprocessor: #fd9353;
+  --syntax-constant: #ffab70;
+  --syntax-punctuation: #ccc0ba;
+  --syntax-bracket: #e0d6d1;
+  --syntax-operator: #ff6b6b;
+  --syntax-logical: #ff9e64;
+  --syntax-number: #ffb86c;
+  --syntax-string: #ffa066;
+  --syntax-identifier: #d9cec9;
+  --syntax-comment: #b5a9a2;
+  
+  /* Scrollbar colors */
+  --scrollbar-track: #2a2522;
+  --scrollbar-thumb: #e86f42;
+  --scrollbar-thumb-hover: #f39c78;
+  
+  /* Selection colors */
+  --selection-bg: rgba(232, 111, 66, 0.3);
+  --selection-text: #f3ebe7;
+  
+  /* Editor highlight */
+  --editor-line-highlight: rgba(232, 111, 66, 0.2);
+  
+  /* Token background colors */
+  --token-bg-keyword: #3d2b1f;
+  --token-bg-identifier: #312c28;
+  --token-bg-number: #3e3632;
+  --token-bg-string: #362e2a;
+  --token-bg-operator: #402f27;
+  --token-bg-default: #312c28;
 }
 
 body {
@@ -83,40 +155,40 @@ body {
 }
 
 .dark-theme ::-webkit-scrollbar-track {
-  background: #2a2522;
+  background: var(--scrollbar-track);
 }
 
 .dark-theme ::-webkit-scrollbar-thumb {
-  background: #e86f42;
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 .dark-theme ::-webkit-scrollbar-thumb:hover {
-  background: #f39c78;
+  background: var(--scrollbar-thumb-hover);
 }
 
 ::-webkit-scrollbar-track {
-  background: #f9efe9;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #e05d30;
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #cb502a;
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Selection styling */
 .dark-theme ::selection {
-  background-color: rgba(232, 111, 66, 0.3);
-  color: #f3ebe7;
+  background-color: var(--selection-bg);
+  color: var(--selection-text);
 }
 
 ::selection {
-  background-color: rgba(224, 93, 48, 0.2);
-  color: #212529;
+  background-color: var(--selection-bg);
+  color: var(--selection-text);
 }
 
 /* File upload animation */
@@ -141,11 +213,11 @@ body {
 
 /* Editor specific styles */
 .editor-line-highlight {
-  background-color: rgba(224, 93, 48, 0.1);
+  background-color: var(--editor-line-highlight);
 }
 
 .dark-theme .editor-line-highlight {
-  background-color: rgba(232, 111, 66, 0.2);
+  background-color: var(--editor-line-highlight);
 }
 
 /* Tooltip styles */

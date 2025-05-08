@@ -1,6 +1,15 @@
 import React from "react";
 import { Search as SearchIcon, Replace as ReplaceIcon } from "lucide-react";
 import { SearchState } from "../types";
+import { 
+  getInputBackgroundColor, 
+  getInputBorderColor,
+  getSecondaryButtonColors,
+  getASTTextColor,
+  getTerminalSecondaryTextColor,
+  getEditorBackgroundColor,
+  getEditorButtonColor
+} from "@/utils/theme";
 
 interface SearchPanelProps {
   theme: "dark" | "light";
@@ -44,15 +53,13 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
   return (
     <div
       className={`p-2 flex flex-col gap-2 border-b ${
-        theme === "dark"
-          ? "bg-[#1e1a17] border-[#3e3632]"
-          : "bg-[#fff1ec] border-[#efe0d9]"
+        getEditorBackgroundColor(theme) + " " + getInputBorderColor(theme)
       }`}
     >
       <div className="flex items-center gap-2">
         <SearchIcon
           size={14}
-          className={theme === "dark" ? "text-[#b5a9a2]" : "text-[#495057]"}
+          className={getTerminalSecondaryTextColor(theme)}
         />
         <input
           type="text"
@@ -70,9 +77,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
           }}
           placeholder="Search"
           className={`flex-1 bg-transparent border outline-none px-2 py-1 rounded ${
-            theme === "dark"
-              ? "bg-[#1e1a17] border-[#3e3632]"
-              : "bg-[#fff1ec] border-[#efe0d9]"
+            getInputBackgroundColor(theme) + " " + getInputBorderColor(theme)
           }`}
           autoFocus
         />
@@ -87,7 +92,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
           <label
             htmlFor="regex-search"
             className={`text-xs cursor-pointer ${
-              theme === "dark" ? "text-[#b5a9a2]" : "text-[#495057]"
+              getTerminalSecondaryTextColor(theme)
             }`}
           >
             Regex
@@ -104,7 +109,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
           <label
             htmlFor="case-sensitive"
             className={`text-xs cursor-pointer ${
-              theme === "dark" ? "text-[#b5a9a2]" : "text-[#495057]"
+              getTerminalSecondaryTextColor(theme)
             }`}
           >
             Case
@@ -113,16 +118,14 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
         <button
           onClick={executeSearch}
           className={`px-2 py-1 rounded ${
-            theme === "dark"
-              ? "bg-[#312c28] hover:bg-[#3e3632] text-[#f3ebe7]"
-              : "bg-[#efe0d9] hover:bg-[#e6d5ce] text-[#495057]"
+            getEditorButtonColor(theme)
           }`}
         >
           Search
         </button>
         <div
           className={`text-xs ${
-            theme === "dark" ? "text-[#b5a9a2]" : "text-[#868e96]"
+            getTerminalSecondaryTextColor(theme)
           }`}
         >
           {getSearchMatches().currentMatch}/{getSearchMatches().totalMatches}
@@ -130,9 +133,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
         <button
           onClick={findPrevious}
           className={`p-1 rounded ${
-            theme === "dark"
-              ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
-              : "hover:bg-[#efe0d9] text-[#495057] hover:text-[#212529]"
+            getEditorButtonColor(theme)
           }`}
           title="Previous (Shift+Enter)"
         >
@@ -141,9 +142,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
         <button
           onClick={findNext}
           className={`p-1 rounded ${
-            theme === "dark"
-              ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
-              : "hover:bg-[#efe0d9] text-[#495057] hover:text-[#212529]"
+            getEditorButtonColor(theme)
           }`}
           title="Next (Enter)"
         >
@@ -152,9 +151,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
         <button
           onClick={closeSearch}
           className={`p-1 rounded ${
-            theme === "dark"
-              ? "hover:bg-[#312c28] text-[#b5a9a2] hover:text-[#f3ebe7]"
-              : "hover:bg-[#efe0d9] text-[#495057] hover:text-[#212529]"
+            getEditorButtonColor(theme)
           }`}
           title="Close (Esc)"
         >
@@ -165,7 +162,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
         <div className="flex items-center gap-2">
           <ReplaceIcon
             size={14}
-            className={theme === "dark" ? "text-[#b5a9a2]" : "text-[#495057]"}
+            className={getTerminalSecondaryTextColor(theme)}
           />
           <input
             type="text"
@@ -173,17 +170,13 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
             onChange={(e) => setReplaceTerm(e.target.value)}
             placeholder="Replace"
             className={`flex-1 bg-transparent border outline-none px-2 py-1 rounded ${
-              theme === "dark"
-                ? "bg-[#1e1a17] border-[#3e3632]"
-                : "bg-[#fff1ec] border-[#efe0d9]"
+              getInputBackgroundColor(theme) + " " + getInputBorderColor(theme)
             }`}
           />
           <button
             onClick={replaceMatch}
             className={`px-2 py-1 rounded ${
-              theme === "dark"
-                ? "bg-[#312c28] hover:bg-[#3e3632] text-[#f3ebe7]"
-                : "bg-[#efe0d9] hover:bg-[#e6d5ce] text-[#495057]"
+              getEditorButtonColor(theme)
             }`}
           >
             Replace
@@ -191,9 +184,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
           <button
             onClick={replaceAll}
             className={`px-2 py-1 rounded ${
-              theme === "dark"
-                ? "bg-[#312c28] hover:bg-[#3e3632] text-[#f3ebe7]"
-                : "bg-[#efe0d9] hover:bg-[#e6d5ce] text-[#495057]"
+              getEditorButtonColor(theme)
             }`}
           >
             Replace All

@@ -15,6 +15,15 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  getErrorTextColor,
+  getWarningTextColor,
+  getInfoTextColor,
+  getPanelBackgroundColor,
+  getPanelBorderColor,
+  getASTTextColor,
+  getASTBorderColor
+} from "@/utils/theme";
 
 interface ErrorReporterProps {
   errors?: CompilationErrors;
@@ -477,21 +486,15 @@ export default function ErrorReporter({
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm overflow-y-auto p-4">
       <div
         className={`rounded-lg shadow-xl max-w-3xl w-full my-8 transform transition-all duration-300 ${
-          theme === "dark"
-            ? "bg-[#262220] text-[#f3ebe7]"
-            : "bg-white text-[#212529]"
+          getPanelBackgroundColor(theme) + " text-[var(--text-primary)]"
         }`}
       >
         <div
-          className={`flex justify-between items-center p-4 border-b ${theme === "dark" ? "border-[#3e3632]" : "border-[#efe0d9]"}`}
+          className={`flex justify-between items-center p-4 border-b ${getPanelBorderColor(theme)}`}
         >
           <h3 className="text-xl font-bold flex items-center gap-2">
             <AlertCircle
-              className={
-                theme === "dark"
-                  ? "text-[var(--error-color)]"
-                  : "text-[var(--error-color)]"
-              }
+              className={getErrorTextColor(theme)}
               size={24}
             />
             <span>{errorInfo.type} Errors Detected</span>

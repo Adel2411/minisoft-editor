@@ -6,119 +6,119 @@
 
 /* Token colors - Light theme */
 .token.keyword {
-  color: #d94e1f; /* Vibrant orange-red for keywords to stand out */
+  color: var(--syntax-keyword);
 }
 
 .token.control {
-  color: #9c3400; /* Deep rust for control statements */
+  color: var(--syntax-control);
 }
 
 .token.io {
-  color: #b86600; /* Amber-brown for IO operations */
+  color: var(--syntax-io);
 }
 
 .token.preprocessor {
-  color: #e05d00; /* Bright orange for preprocessor directives */
+  color: var(--syntax-preprocessor);
 }
 
 .token.constant {
-  color: #008484; /* Teal green for constants - completely different hue */
+  color: var(--syntax-constant);
 }
 
 .token.punctuation {
-  color: #5a6268; /* Slate gray for punctuation */
+  color: var(--syntax-punctuation);
 }
 
 .token.bracket {
-  color: #7c8288; /* Lighter than punctuation for better distinction */
+  color: var(--syntax-bracket);
 }
 
 .token.operator {
-  color: #c22d2d; /* Deep red for operators */
+  color: var(--syntax-operator);
 }
 
 .token.logical {
-  color: #7a4988; /* Purple for logical operators - major hue shift */
+  color: var(--syntax-logical);
 }
 
 .token.number {
-  color: #0a6e31; /* Forest green for numbers */
+  color: var(--syntax-number);
 }
 
 .token.string {
-  color: #af4700; /* Terracotta for strings */
+  color: var(--syntax-string);
 }
 
 .token.identifier {
-  color: #495057; /* Darker gray for identifiers */
+  color: var(--syntax-identifier);
 }
 
 .token.comment {
-  color: #8a8276; /* Warmer gray for comments */
+  color: var(--syntax-comment);
   font-style: italic;
 }
 
 .token.error {
-  color: #e03131; /* Error color */
+  color: var(--error-color);
   text-decoration: wavy underline;
 }
 
 /* Token colors - Dark theme */
 [data-theme="dark"] .token.keyword {
-  color: #ff875f; /* Brighter orange for keywords */
+  color: var(--syntax-keyword);
 }
 
 [data-theme="dark"] .token.control {
-  color: #f5694b; /* Warmer red-orange for control statements */
+  color: var(--syntax-control);
 }
 
 [data-theme="dark"] .token.io {
-  color: #ffd282; /* Lighter yellow-orange for IO operations */
+  color: var(--syntax-io);
 }
 
 [data-theme="dark"] .token.preprocessor {
-  color: #fd9353; /* Bright peach for preprocessor */
+  color: var(--syntax-preprocessor);
 }
 
 [data-theme="dark"] .token.constant {
-  color: #ffab70; /* Peachy orange for constants */
+  color: var(--syntax-constant);
 }
 
 [data-theme="dark"] .token.punctuation {
-  color: #ccc0ba; /* Light gray with warm tint */
+  color: var(--syntax-punctuation);
 }
 
 [data-theme="dark"] .token.bracket {
-  color: #e0d6d1; /* Lighter than punctuation */
+  color: var(--syntax-bracket);
 }
 
 [data-theme="dark"] .token.operator {
-  color: #ff6b6b; /* Bright red for operators */
+  color: var(--syntax-operator);
 }
 
 [data-theme="dark"] .token.logical {
-  color: #ff9e64; /* Rich orange for logical operators */
+  color: var(--syntax-logical);
 }
 
 [data-theme="dark"] .token.number {
-  color: #ffb86c; /* Bright yellow-orange for numbers */
+  color: var(--syntax-number);
 }
 
 [data-theme="dark"] .token.string {
-  color: #ffa066; /* Soft orange for strings */
+  color: var(--syntax-string);
 }
 
 [data-theme="dark"] .token.identifier {
-  color: #d9cec9; /* Text secondary for identifiers */
+  color: var(--syntax-identifier);
 }
 
 [data-theme="dark"] .token.comment {
-  color: #b5a9a2; /* Text tertiary for comments */
+  color: var(--syntax-comment);
   font-style: italic;
 }
 
 [data-theme="dark"] .token.error {
-  color: #fa5252; /* Error color */
+  color: var(--error-color);
   text-decoration: wavy underline;
 }
 

@@ -1,7 +1,15 @@
 import { Program } from "@/types";
 import { useState } from "react";
 import CollapsibleSection from "./CollapsibleSection";
-import { getNodeColor } from "../utils/theme";
+import { 
+  getNodeColor, 
+  getASTTextColor, 
+  getObjectNameColor,
+  getASTBorderColor,
+  getLiteralColor,
+  getPanelBackgroundColor,
+  getPanelBorderColor
+} from "../../../utils/theme";
 
 export default function ASTViewer({
   program,
@@ -14,9 +22,7 @@ export default function ASTViewer({
     <div className="animate-fadeIn">
       <div
         className={`p-4 rounded-lg overflow-auto shadow-sm border animate-fadeIn ${
-          theme === "dark"
-            ? "bg-[#262220] border-[#3e3632]"
-            : "bg-white border-[#efe0d9]"
+          getPanelBackgroundColor(theme) + " " + getPanelBorderColor(theme)
         }`}
         style={{ maxHeight: "calc(100vh - 200px)" }}
       >
@@ -71,9 +77,7 @@ function ASTNode({
     if (node && typeof node === "object") {
       if (node.value !== undefined) {
         return (
-          <span
-            className={`font-mono ${theme === "dark" ? "text-[#f39c78]" : "text-[#cb502a]"}`}
-          >
+          <span className={`font-mono ${getLiteralColor(theme)}`}>
             {typeof node.value === "string"
               ? `"${node.value}"`
               : String(node.value)}
@@ -83,9 +87,7 @@ function ASTNode({
     }
 
     return (
-      <span
-        className={`font-mono ${theme === "dark" ? "text-[#f39c78]" : "text-[#cb502a]"}`}
-      >
+      <span className={`font-mono ${getLiteralColor(theme)}`}>
         {String(node)}
       </span>
     );
@@ -116,9 +118,7 @@ function ASTNode({
 
         {!collapsed && (
           <div
-            className={`pl-4 border-l-2 ml-2 space-y-1 ${
-              theme === "dark" ? "border-[#3e3632]" : "border-[#efe0d9]"
-            }`}
+            className={`pl-4 border-l-2 ml-2 space-y-1 ${getASTBorderColor(theme)}`}
           >
             {node.map((item, idx) => (
               <div key={idx}>
@@ -160,16 +160,12 @@ function ASTNode({
 
         {!collapsed && data && (
           <div
-            className={`pl-4 border-l-2 ml-2 mt-1 space-y-1 ${
-              theme === "dark" ? "border-[#3e3632]" : "border-[#efe0d9]"
-            }`}
+            className={`pl-4 border-l-2 ml-2 mt-1 space-y-1 ${getASTBorderColor(theme)}`}
           >
             {Object.entries(data).map(([key, value]) => (
               <div key={key} className="flex flex-wrap items-start">
                 <span
-                  className={`font-medium mr-2 ${
-                    theme === "dark" ? "text-[#e86f42]" : "text-[#e05d30]"
-                  }`}
+                  className={`font-medium mr-2 ${getObjectNameColor(theme)}`}
                 >
                   {key}:
                 </span>
@@ -203,16 +199,12 @@ function ASTNode({
 
       {!collapsed && (
         <div
-          className={`pl-4 border-l-2 ml-2 space-y-1 ${
-            theme === "dark" ? "border-[#3e3632]" : "border-[#efe0d9]"
-          }`}
+          className={`pl-4 border-l-2 ml-2 space-y-1 ${getASTBorderColor(theme)}`}
         >
           {Object.entries(node).map(([key, value]) => (
             <div key={key} className="flex flex-wrap items-start">
               <span
-                className={`font-medium mr-2 ${
-                  theme === "dark" ? "text-[#e86f42]" : "text-[#e05d30]"
-                }`}
+                className={`font-medium mr-2 ${getObjectNameColor(theme)}`}
               >
                 {key}:
               </span>

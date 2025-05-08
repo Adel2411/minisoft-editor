@@ -1,6 +1,6 @@
 import type { Symbol } from "@/types";
-import { filterSymbols } from "../utils/filters";
-import { getSymbolKindColor } from "../utils/theme";
+import { filterSymbols } from "../utils";
+import { getSymbolKindColor } from "../../../utils/theme";
 import DataTable from "./DataTable";
 
 interface SymbolsViewerProps {

@@ -1,6 +1,6 @@
 import type { Token } from "@/types";
-import { filterTokens } from "../utils/filters";
-import { getTokenColor } from "../utils/theme";
+import { filterTokens } from "../utils";
+import { getTokenColor } from "../../../utils/theme";
 import DataTable from "./DataTable";
 
 interface TokensViewerProps {

@@ -1,6 +1,20 @@
 import { Operand, Quadruple, QuadrupleProgram } from "@/types";
 import { useState } from "react";
-import { filterQuadruples } from "../utils/filters";
+import { filterQuadruples } from "../utils";
+import { 
+  getLabelColor, 
+  getVariableColor, 
+  getLiteralColor,
+  getTempVarColor,
+  getIOColor,
+  getOperatorColor,
+  getJumpColor,
+  getASTTextColor,
+  getPanelBackgroundColor,
+  getPanelBorderColor,
+  getHoverBackgroundColor,
+  getErrorTextColor
+} from "../../../utils/theme";
 
 interface QuadruplesViewerProps {
   program: QuadrupleProgram;
@@ -22,57 +36,43 @@ export default function QuadruplesViewer({
       case "IntLiteral":
       case "FloatLiteral":
         return (
-          <span
-            className={theme === "dark" ? "text-[#f39c78]" : "text-[#cb502a]"}
-          >
+          <span className={getLiteralColor(theme)}>
             {operand.data.value}
           </span>
         );
       case "StringLiteral":
         return (
-          <span
-            className={theme === "dark" ? "text-[#f39c78]" : "text-[#cb502a]"}
-          >
+          <span className={getLiteralColor(theme)}>
             "{operand.data.value}"
           </span>
         );
       case "Variable":
         return (
-          <span
-            className={theme === "dark" ? "text-[#e86f42]" : "text-[#e05d30]"}
-          >
+          <span className={getVariableColor(theme)}>
             {operand.data.name}
           </span>
         );
       case "TempVariable":
         return (
-          <span
-            className={theme === "dark" ? "text-[#fb8f67]" : "text-[#a84424]"}
-          >
+          <span className={getTempVarColor(theme)}>
             {operand.data.name}
           </span>
         );
       case "ArrayElement":
         return (
-          <span
-            className={theme === "dark" ? "text-[#ffb86c]" : "text-[#ed7d39]"}
-          >
+          <span className={getVariableColor(theme)}>
             {operand.data.name}[{renderOperand(operand.data.index)}]
           </span>
         );
       case "Empty":
         return (
-          <span
-            className={theme === "dark" ? "text-[#b5a9a2]" : "text-[#868e96]"}
-          >
+          <span className={getASTTextColor(theme)}>
             _
           </span>
         );
       default:
         return (
-          <span
-            className={theme === "dark" ? "text-[#fa5252]" : "text-[#e03131]"}
-          >
+          <span className={getErrorTextColor(theme)}>
             Unknown
           </span>
         );
@@ -82,13 +82,7 @@ export default function QuadruplesViewer({
   const renderCompactQuadruple = (quad: Quadruple) => {
     if (quad.operation.type === "Label") {
       return (
-        <div
-          className={
-            theme === "dark"
-              ? "font-bold text-[#f39c78]"
-              : "font-bold text-[#cb502a]"
-          }
-        >
+        <div className={getLabelColor(theme) + " font-bold"}>
           Label {(quad.operation as any).data.id}:
         </div>
       );
@@ -97,13 +91,7 @@ export default function QuadruplesViewer({
     if (quad.operation.type === "Jump") {
       return (
         <div className="flex items-center gap-2">
-          <span
-            className={
-              theme === "dark"
-                ? "font-bold text-[#f39c78]"
-                : "font-bold text-[#cb502a]"
-            }
-          >
+          <span className={getJumpColor(theme) + " font-bold"}>
             GOTO
           </span>
           <span>Label {(quad.operation as any).data.target}</span>
@@ -116,13 +104,7 @@ export default function QuadruplesViewer({
         <div className="flex items-center gap-2">
           <span className="font-bold">IF</span>
           {renderOperand(quad.operand1)}
-          <span
-            className={
-              theme === "dark"
-                ? "font-bold text-[#f39c78]"
-                : "font-bold text-[#cb502a]"
-            }
-          >
+          <span className={getJumpColor(theme) + " font-bold"}>
             GOTO
           </span>
           <span>Label {(quad.operation as any).data.target}</span>
@@ -135,13 +117,7 @@ export default function QuadruplesViewer({
         <div className="flex items-center gap-2">
           <span className="font-bold">IF NOT</span>
           {renderOperand(quad.operand1)}
-          <span
-            className={
-              theme === "dark"
-                ? "font-bold text-[#f39c78]"
-                : "font-bold text-[#cb502a]"
-            }
-          >
+          <span className={getJumpColor(theme) + " font-bold"}>
             GOTO
           </span>
           <span>Label {(quad.operation as any).data.target}</span>
@@ -152,13 +128,7 @@ export default function QuadruplesViewer({
     if (quad.operation.type === "Input") {
       return (
         <div className="flex items-center gap-2">
-          <span
-            className={
-              theme === "dark"
-                ? "font-bold text-[#fb8f67]"
-                : "font-bold text-[#a84424]"
-            }
-          >
+          <span className={getIOColor(theme) + " font-bold"}>
             INPUT
           </span>
           {renderOperand(quad.result)}
@@ -169,13 +139,7 @@ export default function QuadruplesViewer({
     if (quad.operation.type === "Output") {
       return (
         <div className="flex items-center gap-2">
-          <span
-            className={
-              theme === "dark"
-                ? "font-bold text-[#fb8f67]"
-                : "font-bold text-[#a84424]"
-            }
-          >
+          <span className={getIOColor(theme) + " font-bold"}>
             OUTPUT
           </span>
           {renderOperand(quad.operand1)}
@@ -205,13 +169,7 @@ export default function QuadruplesViewer({
           {renderOperand(quad.result)}
           <span className="px-1">=</span>
           {renderOperand(quad.operand1)}
-          <span
-            className={
-              theme === "dark"
-                ? "font-bold px-1 text-[#fa5252]"
-                : "font-bold px-1 text-[#e03131]"
-            }
-          >
+          <span className={getOperatorColor(theme) + " font-bold px-1"}>
             {opSymbols[quad.operation.type]}
           </span>
           {renderOperand(quad.operand2)}
@@ -224,13 +182,7 @@ export default function QuadruplesViewer({
         <div className="flex items-center gap-2">
           {renderOperand(quad.result)}
           <span className="px-1">=</span>
-          <span
-            className={
-              theme === "dark"
-                ? "font-bold px-1 text-[#fa5252]"
-                : "font-bold px-1 text-[#e03131]"
-            }
-          >
+          <span className={getOperatorColor(theme) + " font-bold px-1"}>
             !
           </span>
           {renderOperand(quad.operand1)}
@@ -257,13 +209,7 @@ export default function QuadruplesViewer({
             <span className="px-1">=</span>
           </>
         )}
-        <span
-          className={
-            theme === "dark"
-              ? "font-bold text-[#fa5252]"
-              : "font-bold text-[#e03131]"
-          }
-        >
+        <span className={getErrorTextColor(theme) + " font-bold"}>
           {quad.operation.type}
         </span>
         {quad.operand1.type !== "Empty" && renderOperand(quad.operand1)}
@@ -276,27 +222,23 @@ export default function QuadruplesViewer({
     <div className="animate-fadeIn">
       <div className="mb-4 flex justify-between items-center">
         <div
-          className={`text-sm ${theme === "dark" ? "text-[#d9cec9]" : "text-[#495057]"}`}
+          className={`text-sm ${getASTTextColor(theme)}`}
         >
           <span className="font-semibold mr-4">
             Next temporary:{" "}
-            <span
-              className={theme === "dark" ? "text-[#fb8f67]" : "text-[#a84424]"}
-            >
+            <span className={getTempVarColor(theme)}>
               t{next_temp}
             </span>
           </span>
           <span className="font-semibold">
             Next label:{" "}
-            <span
-              className={theme === "dark" ? "text-[#f39c78]" : "text-[#cb502a]"}
-            >
+            <span className={getLabelColor(theme)}>
               L{next_label}
             </span>
           </span>
         </div>
         <div
-          className={`text-sm ${theme === "dark" ? "text-[#b5a9a2]" : "text-[#868e96]"}`}
+          className={`text-sm ${getASTTextColor(theme)}`}
         >
           {filteredQuadruples.length}{" "}
           {filteredQuadruples.length === 1 ? "quadruple" : "quadruples"}
@@ -305,9 +247,7 @@ export default function QuadruplesViewer({
 
       <div
         className={`p-4 rounded-lg overflow-auto font-mono text-sm shadow-sm border ${
-          theme === "dark"
-            ? "bg-[#262220] text-[#f3ebe7] border-[#3e3632]"
-            : "bg-white text-[#212529] border-[#efe0d9]"
+          getPanelBackgroundColor(theme) + " " + getPanelBorderColor(theme)
         }`}
         style={{ maxHeight: "calc(100vh - 250px)" }}
       >
@@ -315,16 +255,14 @@ export default function QuadruplesViewer({
           {filteredQuadruples.map((quad, index) => (
             <div
               key={index}
-              className={`group ${
-                theme === "dark" ? "hover:bg-[#312c28]" : "hover:bg-[#fff1ec]"
-              } transition-colors px-3 py-2 rounded cursor-pointer`}
+              className={`group ${getHoverBackgroundColor(theme)} transition-colors px-3 py-2 rounded cursor-pointer`}
               onClick={() =>
                 setExpandedIndex(expandedIndex === index ? null : index)
               }
             >
               <div className="flex items-center">
                 <div
-                  className={`w-10 text-right ${theme === "dark" ? "text-[#b5a9a2]" : "text-[#868e96]"} mr-4`}
+                  className={`w-10 text-right ${getASTTextColor(theme)} mr-4`}
                 >
                   {index}:
                 </div>
@@ -336,13 +274,7 @@ export default function QuadruplesViewer({
                       {quad.operation.type === "Label" && (
                         <>
                           <div className="font-bold">Label ID:</div>
-                          <div
-                            className={
-                              theme === "dark"
-                                ? "text-[#f39c78]"
-                                : "text-[#cb502a]"
-                            }
-                          >
+                          <div className={getLabelColor(theme)}>
                             {(quad.operation as any).data.id}
                           </div>
                         </>
@@ -352,13 +284,7 @@ export default function QuadruplesViewer({
                       ) && (
                         <>
                           <div className="font-bold">Target:</div>
-                          <div
-                            className={
-                              theme === "dark"
-                                ? "text-[#f39c78]"
-                                : "text-[#cb502a]"
-                            }
-                          >
+                          <div className={getLabelColor(theme)}>
                             Label {(quad.operation as any).data.target}
                           </div>
                         </>
@@ -378,7 +304,7 @@ export default function QuadruplesViewer({
                   <div className="w-full">{renderCompactQuadruple(quad)}</div>
                 )}
                 <div
-                  className={`${expandedIndex === index ? "transform rotate-180" : ""} transition-transform ml-2 ${theme === "dark" ? "text-[#b5a9a2]" : "text-[#868e96]"}`}
+                  className={`${expandedIndex === index ? "transform rotate-180" : ""} transition-transform ml-2 ${getASTTextColor(theme)}`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -396,7 +322,7 @@ export default function QuadruplesViewer({
 
           {filteredQuadruples.length === 0 && (
             <div
-              className={`text-center py-8 ${theme === "dark" ? "text-[#b5a9a2]" : "text-[#868e96]"}`}
+              className={`text-center py-8 ${getASTTextColor(theme)}`}
             >
               No quadruples found{searchTerm ? " matching your search" : ""}
             </div>

@@ -6,6 +6,14 @@ import { dialog, fileSystem } from './utils';
 import TerminalHeader from './components/TerminalHeader';
 import TerminalContent from './components/TerminalContent';
 import TerminalInput from './components/TerminalInput';
+import { 
+  getTerminalBackgroundColor, 
+  getTerminalBorderColor,
+  getTerminalHeaderColor,
+  getTerminalTextColor,
+  getTerminalSecondaryTextColor,
+  getTerminalCommandColor
+} from '../../utils/theme';
 
 
 const Terminal: React.FC<TerminalProps> = ({ 
@@ -359,7 +367,7 @@ const Terminal: React.FC<TerminalProps> = ({
     >
       <div 
         className={`w-full h-full flex flex-col shadow-lg border-t ${
-          theme === 'dark' ? 'bg-[#262220] border-[#3e3632]' : 'bg-white border-[#efe0d9]'
+          getTerminalBackgroundColor(theme) + " " + getTerminalBorderColor(theme)
         }`}
       >
         <TerminalHeader 
@@ -389,7 +397,7 @@ const Terminal: React.FC<TerminalProps> = ({
       
       <style jsx>{`
         .flash-copy {
-          background-color: ${theme === 'dark' ? '#3e3632' : '#efe0d9'};
+          background-color: var(--border-color);
           transition: background-color 0.2s;
         }
       `}</style>
