@@ -59,22 +59,9 @@ minisoft-editor/
 │   ├── README.md
 │   ├── src/                  # Compiler implementation
 │   │   ├── lexer/            # Lexical analysis
-│   │   │   ├── mod.rs        # Lexer module exports
-│   │   │   ├── token.rs      # Token definitions
-│   │   │   └── lexer.rs      # Logos lexer implementation
 │   │   ├── parser/           # Syntax analysis
-│   │   │   ├── mod.rs        # Parser module exports
-│   │   │   ├── ast.rs        # Abstract Syntax Tree definitions
-│   │   │   ├── grammar.lalrpop # LALRPOP grammar definition
-│   │   │   └── error.rs      # Parser error handling
 │   │   ├── semantics/        # Semantic analysis
-│   │   │   ├── mod.rs        # Semantics module exports
-│   │   │   ├── analyzer.rs   # Semantic analyzer main implementation
-│   │   │   ├── symbol_table.rs # Symbol table implementation
-│   │   │   └── error.rs      # Semantic error handling
 │   │   ├── codegen/          # Code generation
-│   │   │   ├── mod.rs        # Code generation module exports
-│   │   │   └── quadruple.rs  # Quadruple intermediate representation
 │   │   └── error_reporter/   # Error handling & reporting
 │   └── tests/                # Compiler test suite
 ├── src/                      # Frontend source code
